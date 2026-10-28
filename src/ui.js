@@ -424,7 +424,7 @@
       else note('Could not save the file' + (e && e.message ? ': ' + e.message : '.'));
     }
   }
-  function baseName() { return 'stipple-' + $('paper').value.toLowerCase() + '-' + st.N + 'dots'; }
+  function baseName() { return 'dots-assemble-' + $('paper').value.toLowerCase() + '-' + st.N + 'dots'; }
 
   async function exportPng() {
     if (!st.pts || st.solving) { note('Wait for the dots to finish spacing, then export.'); return; }
@@ -487,7 +487,7 @@
       const x = off.getContext('2d', { willReadFrequently: true });
       x.fillStyle = '#fff'; x.fillRect(0, 0, RW, RH);
       x.fillStyle = '#000'; x.textBaseline = 'alphabetic';
-      const text = 'STIPPLE PRESS';
+      const text = 'DOTS ASSEMBLE';
       const setFont = (px) => {
         x.font = '900 expanded ' + px + 'px Archivo, "Arial Black", Arial, sans-serif';
         if (x.font.indexOf(px + 'px') < 0) x.font = '900 ' + px + 'px Archivo, "Arial Black", Arial, sans-serif'; // browser without stretch keywords

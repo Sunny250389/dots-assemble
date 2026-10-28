@@ -1,4 +1,4 @@
-# Stipple Press
+# Dots Assemble
 
 Turn a photograph into a stippled drawing made of dots. Runs entirely in the browser: the image never leaves your device.
 

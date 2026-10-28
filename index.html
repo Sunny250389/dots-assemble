@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Stipple Press</title>
+<title>Dots Assemble</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Martian+Mono:wght@400;500&display=swap">
@@ -220,7 +220,7 @@ canvas { display: block; }
 <div class="app">
   <header class="mast">
     <h1 class="wordmark">
-      <span class="sr">Stipple Press</span>
+      <span class="sr">Dots Assemble</span>
       <svg class="reg" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="11" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M20 1v38M1 20h38" stroke="currentColor" stroke-width="1.5"/><circle cx="20" cy="20" r="2.5" fill="currentColor"/></svg>
       <canvas id="mark" aria-hidden="true"></canvas>
     </h1>
@@ -1255,7 +1255,7 @@ canvas { display: block; }
       else note('Could not save the file' + (e && e.message ? ': ' + e.message : '.'));
     }
   }
-  function baseName() { return 'stipple-' + $('paper').value.toLowerCase() + '-' + st.N + 'dots'; }
+  function baseName() { return 'dots-assemble-' + $('paper').value.toLowerCase() + '-' + st.N + 'dots'; }
 
   async function exportPng() {
     if (!st.pts || st.solving) { note('Wait for the dots to finish spacing, then export.'); return; }
@@ -1318,7 +1318,7 @@ canvas { display: block; }
       const x = off.getContext('2d', { willReadFrequently: true });
       x.fillStyle = '#fff'; x.fillRect(0, 0, RW, RH);
       x.fillStyle = '#000'; x.textBaseline = 'alphabetic';
-      const text = 'STIPPLE PRESS';
+      const text = 'DOTS ASSEMBLE';
       const setFont = (px) => {
         x.font = '900 expanded ' + px + 'px Archivo, "Arial Black", Arial, sans-serif';
         if (x.font.indexOf(px + 'px') < 0) x.font = '900 ' + px + 'px Archivo, "Arial Black", Arial, sans-serif'; // browser without stretch keywords
