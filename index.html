@@ -1405,7 +1405,7 @@ canvas { display: block; }
   // The overlay is its own canvas, so painting a stroke never repaints the dots.
   function drawOverlay() {
     const ov = $('ov');
-    const show = !!(st.maskOn && st.mask && ($('maskview').checked || st.tool));
+    const show = !!(st.maskOn && st.mask && $('maskview').checked); // the tick box alone decides
     ov.hidden = !show;
     if (!show) return;
     if (ov.width !== st.mw || ov.height !== st.mh) { ov.width = st.mw; ov.height = st.mh; }
