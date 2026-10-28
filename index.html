@@ -1,0 +1,1705 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stipple Press</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Martian+Mono:wght@400;500&display=swap">
+<style>
+/* Layout concept: a printmaker's proofing desk. A masthead whose wordmark is itself stippled, then the sheet on a dot-grid desk with crop marks and dimension lines, a caption plate under it, and the controls in a quiet rail beside it. */
+:root {
+  --bg: #ECEDEF;
+  --field: #F7F7F8;
+  --ink: #0E1117;
+  --muted: #586070;
+  --line: #CBCFD6;
+  --line-strong: #9CA3B0;
+  --accent: #D42E16;
+  --accent-ink: #FFFFFF;
+  --desk: #DCDEE3;
+  --desk-dot: #B6BBC6;
+  --dim: #6A7282;
+  --sheet-shadow: rgba(14, 17, 23, 0.30);
+  --warn: #9A5300;
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Martian Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0C0E12; --field: #13161B; --ink: #E8EAEE; --muted: #8A93A3; --line: #252A32; --line-strong: #434B58;
+    --accent: #FF6B4F; --accent-ink: #1A0905; --desk: #07080A; --desk-dot: #1E232B; --dim: #808A9B;
+    --sheet-shadow: rgba(0, 0, 0, 0.45); --warn: #F2B24C;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0C0E12; --field: #13161B; --ink: #E8EAEE; --muted: #8A93A3; --line: #252A32; --line-strong: #434B58;
+  --accent: #FF6B4F; --accent-ink: #1A0905; --desk: #07080A; --desk-dot: #1E232B; --dim: #808A9B;
+  --sheet-shadow: rgba(0, 0, 0, 0.45); --warn: #F2B24C;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.45; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.app {
+  max-width: 1320px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+}
+
+/* masthead */
+.mast { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px 40px; flex-wrap: wrap; padding-bottom: 22px; }
+.wordmark { display: flex; align-items: center; gap: 18px; margin: 0; min-width: 0; flex: 1 1 520px; max-width: 840px; }
+.reg { width: 38px; height: 38px; flex: none; color: var(--accent); }
+#mark { display: block; width: min(100%, 760px); aspect-ratio: 760 / 96; height: auto; }
+.strap { margin: 0; max-width: 34ch; color: var(--muted); font-size: 13px; line-height: 1.5; padding-bottom: 6px; }
+
+/* layout */
+.layout { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 32px; align-items: start; }
+.stage-wrap { grid-column: 2; grid-row: 1; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); z-index: 5; min-width: 0; }
+.panel { grid-column: 1; grid-row: 1; min-width: 0; display: flex; flex-direction: column; }
+
+/* rail */
+.group { padding: 20px 0 18px; border-top: 1px dotted var(--line-strong); display: grid; gap: 15px; }
+.group:first-child { border-top: 0; padding-top: 4px; }
+.group h2, details.adv summary {
+  margin: 0; display: flex; align-items: center; gap: 10px; cursor: default;
+  font: 500 10.5px/1 var(--font-mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
+}
+details.adv summary { cursor: pointer; list-style: none; }
+details.adv summary::-webkit-details-marker { display: none; }
+.group h2::before, details.adv summary::before {
+  content: ""; width: 24px; height: 8px; flex: none;
+  background:
+    radial-gradient(circle at 3px 4px, var(--ink) 1.2px, transparent 1.7px),
+    radial-gradient(circle at 11px 4px, var(--ink) 2.2px, transparent 2.7px),
+    radial-gradient(circle at 19px 4px, var(--ink) 3.2px, transparent 3.7px);
+}
+details.adv[open] summary { margin-bottom: 15px; }
+
+.field { display: grid; gap: 7px; min-width: 0; }
+.field label, .field .lab { font-weight: 500; }
+.field .lab { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.field output { font: 400 11.5px var(--font-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.hint { color: var(--muted); font-size: 12px; line-height: 1.45; margin: 0; max-width: 42ch; }
+
+input[type="range"] {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 22px; margin: 0; cursor: pointer; border-radius: 2px;
+  background: radial-gradient(circle at 50% 50%, var(--line-strong) 0.9px, transparent 1.3px) 0 50% / 6px 6px repeat-x;
+}
+input[type="range"]::-webkit-slider-runnable-track { height: 22px; background: transparent; }
+input[type="range"]::-moz-range-track { height: 22px; background: transparent; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: 3px; border-radius: 50%; background: var(--ink); border: 3px solid var(--bg); box-shadow: 0 0 0 1px var(--ink); }
+input[type="range"]::-moz-range-thumb { width: 10px; height: 10px; border-radius: 50%; background: var(--ink); border: 3px solid var(--bg); box-shadow: 0 0 0 1px var(--ink); }
+input:focus-visible, select:focus-visible, button:focus-visible, .drop:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+select, .color {
+  font: inherit; color: var(--ink); background: var(--field); border: 1px solid var(--line-strong); border-radius: 2px; padding: 8px 10px; min-width: 0;
+}
+select { width: 100%; }
+.btn {
+  font: 600 13px var(--font-body); letter-spacing: 0.01em; color: var(--ink); background: transparent; border: 1px solid var(--line-strong);
+  border-radius: 2px; padding: 9px 14px; cursor: pointer; text-align: center; transition: background .15s, color .15s, border-color .15s;
+}
+.btn:hover { border-color: var(--ink); }
+.btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.btn.primary:hover { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn[disabled] { opacity: 0.4; cursor: not-allowed; }
+.btn[disabled]:hover { border-color: var(--line-strong); }
+.btn.primary[disabled]:hover { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+
+.drop { display: grid; gap: 4px; place-items: center; text-align: center; padding: 20px 12px; border: 2px dotted var(--line-strong); border-radius: 4px; cursor: pointer; background: var(--field); transition: border-color .15s, background .15s; }
+.drop.over { border-color: var(--accent); background: var(--bg); }
+.drop strong { font-weight: 600; font-size: 15px; }
+.drop span { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.drop input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+.checks { display: flex; gap: 20px; flex-wrap: wrap; }
+.check { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; }
+.check input { width: 16px; height: 16px; accent-color: var(--accent); margin: 0; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.presets { display: flex; gap: 8px; flex-wrap: wrap; }
+.preset { width: 40px; height: 40px; border-radius: 2px; border: 1px solid var(--line-strong); display: grid; place-items: center; cursor: pointer; padding: 0; }
+.preset i { width: 15px; height: 15px; border-radius: 50%; display: block; }
+.preset[aria-pressed="true"] { outline: 2px solid var(--accent); outline-offset: 2px; }
+.presetname { font: 400 11.5px var(--font-mono); color: var(--muted); margin: -4px 0 0; }
+.colors { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.color { padding: 3px; height: 36px; width: 100%; cursor: pointer; }
+
+/* stage */
+.stagebar { display: flex; justify-content: space-between; align-items: center; gap: 10px 14px; padding: 0 0 10px; flex-wrap: wrap; min-height: 34px; }
+#stats { font: 400 11.5px var(--font-mono); color: var(--muted); min-width: 0; }
+.tools { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.chip { font: 500 11px var(--font-mono); letter-spacing: 0.04em; color: var(--ink); background: transparent; border: 1px solid var(--line-strong); border-radius: 2px; padding: 5px 10px; cursor: pointer; transition: background .15s, color .15s; }
+.chip:hover { border-color: var(--ink); }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.zoom { display: inline-flex; }
+.zoom .chip { border-radius: 0; }
+.zoom .chip + .chip { margin-left: -1px; }
+.zoom .chip:first-child { border-radius: 2px 0 0 2px; }
+.zoom .chip:last-child { border-radius: 0 2px 2px 0; }
+
+.stage {
+  height: 640px; border: 1px solid var(--line); border-radius: 3px; overflow: auto; position: relative; background-color: var(--desk);
+  background-image: radial-gradient(var(--desk-dot) 1px, transparent 1.3px); background-size: 22px 22px;
+}
+.sheetbox { min-width: 100%; min-height: 100%; display: grid; place-items: center; padding: 58px 38px 38px 58px; width: max-content; }
+.frame { position: relative; line-height: 0; }
+.sheet { position: relative; box-shadow: 0 1px 2px var(--sheet-shadow), 0 14px 36px var(--sheet-shadow); line-height: 0; }
+.sheet.fresh { animation: sheetin .5s cubic-bezier(.2, .7, .2, 1); }
+@keyframes sheetin { from { opacity: 0; transform: translateY(12px) rotate(-0.6deg); } to { opacity: 1; transform: none; } }
+canvas { display: block; }
+
+.btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.btns .btn { flex: 1 1 auto; }
+.edges { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip:disabled { opacity: 0.4; cursor: not-allowed; }
+.chip:disabled:hover { border-color: var(--line-strong); }
+.ov { position: absolute; pointer-events: none; }
+.sheet.brush #cv { cursor: crosshair; touch-action: none; }
+.ring { position: absolute; border: 1.5px solid var(--accent); border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.65); }
+
+.crop { position: absolute; width: 0; height: 0; pointer-events: none; }
+.crop::before, .crop::after { content: ""; position: absolute; background: var(--accent); }
+.crop.tl { left: 0; top: 0; }       .crop.tr { left: 100%; top: 0; }
+.crop.bl { left: 0; top: 100%; }    .crop.br { left: 100%; top: 100%; }
+.crop.tl::before, .crop.bl::before { left: -22px; width: 15px; height: 1px; top: 0; }
+.crop.tr::before, .crop.br::before { left: 7px; width: 15px; height: 1px; top: 0; }
+.crop.tl::after, .crop.tr::after { top: -22px; height: 15px; width: 1px; left: 0; }
+.crop.bl::after, .crop.br::after { top: 7px; height: 15px; width: 1px; left: 0; }
+
+.dim { position: absolute; display: flex; align-items: center; gap: 8px; font: 400 10px/1 var(--font-mono); color: var(--dim); letter-spacing: 0.06em; pointer-events: none; }
+.dim i { flex: 1; background: var(--dim); }
+.dim::before, .dim::after { content: ""; position: absolute; background: var(--dim); }
+.dim.w { left: 0; right: 0; top: -40px; }
+.dim.w i { height: 1px; }
+.dim.w::before, .dim.w::after { top: -4px; width: 1px; height: 9px; }
+.dim.w::before { left: 0; }  .dim.w::after { right: 0; }
+.dim.h { top: 0; bottom: 0; left: -40px; flex-direction: column; }
+.dim.h i { width: 1px; }
+.dim.h span { writing-mode: vertical-rl; transform: rotate(180deg); }
+.dim.h::before, .dim.h::after { left: -4px; height: 1px; width: 9px; }
+.dim.h::before { top: 0; }  .dim.h::after { bottom: 0; }
+
+.bar { height: 2px; background: var(--line); margin-top: 12px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .1s linear; }
+
+.plate { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 16px; margin: 12px 0 0; padding-top: 10px; border-top: 1px solid var(--ink); }
+.plate div { min-width: 0; }
+.plate dt { font: 500 10px/1 var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.plate dd { margin: 6px 0 0; font: 500 13px/1.3 var(--font-mono); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.warn { margin: 12px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--warn); max-width: 80ch; }
+.export { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 16px; }
+.export .btn { padding: 11px 18px; }
+.export .note { color: var(--muted); font-size: 12px; flex: 1 1 200px; min-width: 0; }
+
+@media (max-width: 860px) {
+  .mast { padding-bottom: 14px; }
+  .wordmark { flex-basis: 100%; gap: 12px; }
+  .reg { width: 28px; height: 28px; }
+  .strap { max-width: 52ch; padding-bottom: 0; }
+  .layout { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .stage-wrap, .panel { grid-column: 1; }
+  .stage-wrap { grid-row: 1; background: var(--bg); padding-bottom: 8px; }
+  .panel { grid-row: 2; }
+  .stage { height: 340px; }
+  .sheetbox { padding: 30px 24px 24px 30px; }
+  .dim { display: none; }
+  .plate { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
+  .export { padding-top: 10px; }
+  .export .note { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="app">
+  <header class="mast">
+    <h1 class="wordmark">
+      <span class="sr">Stipple Press</span>
+      <svg class="reg" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="11" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M20 1v38M1 20h38" stroke="currentColor" stroke-width="1.5"/><circle cx="20" cy="20" r="2.5" fill="currentColor"/></svg>
+      <canvas id="mark" aria-hidden="true"></canvas>
+    </h1>
+    <p class="strap">Turn a photograph into a drawing made of dots. Everything runs in your browser and the image never leaves this device.</p>
+  </header>
+
+  <div class="layout">
+    <section class="stage-wrap" aria-label="Preview">
+      <div class="stagebar">
+        <span id="stats">Preparing sample…</span>
+        <span class="tools">
+          <button type="button" class="chip" id="btnCompare" aria-pressed="false">Compare original</button>
+          <span class="zoom" role="group" aria-label="Preview zoom">
+            <button type="button" class="chip" data-zoom="1" aria-pressed="true">Fit</button>
+            <button type="button" class="chip" data-zoom="2" aria-pressed="false">2×</button>
+            <button type="button" class="chip" data-zoom="4" aria-pressed="false">4×</button>
+          </span>
+        </span>
+      </div>
+      <div class="stage" id="stage">
+        <div class="sheetbox">
+          <div class="frame">
+            <div class="dim w" aria-hidden="true"><i></i><span id="dimW">210 mm</span><i></i></div>
+            <div class="dim h" aria-hidden="true"><i></i><span id="dimH">297 mm</span><i></i></div>
+            <div class="sheet"><canvas id="cv" aria-label="Stippled preview"></canvas><canvas id="ov" class="ov" hidden aria-hidden="true"></canvas></div>
+            <span class="ring" id="ring" hidden></span>
+            <span class="crop tl"></span><span class="crop tr"></span><span class="crop bl"></span><span class="crop br"></span>
+          </div>
+        </div>
+      </div>
+      <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+      <dl class="plate">
+        <div><dt>Dots</dt><dd id="specDots">…</dd></div>
+        <div><dt>Sheet</dt><dd id="specSheet">…</dd></div>
+        <div><dt>Dot size</dt><dd id="specDot">…</dd></div>
+        <div><dt>Ink coverage</dt><dd id="specInk">…</dd></div>
+      </dl>
+      <p class="warn" id="warn" hidden></p>
+      <div class="export">
+        <button type="button" class="btn primary" id="btnPng">Download PNG</button>
+        <button type="button" class="btn" id="btnSvg">Download SVG</button>
+        <span class="note" id="dlnote">PNG resolution is set under Paper. SVG is vector, in millimetres.</span>
+      </div>
+    </section>
+
+    <aside class="panel" aria-label="Controls">
+      <div class="group">
+        <h2>Image</h2>
+        <label class="drop" id="drop">
+          <input type="file" id="file" accept="image/*">
+          <strong>Choose an image</strong>
+          <span id="fname">or drop one here. Using the sample.</span>
+        </label>
+        <button type="button" class="btn" id="btnSample">Use sample image</button>
+      </div>
+
+      <div class="group">
+        <h2>Subject focus</h2>
+        <p class="hint">Keep the dots on the subject and thin them out behind it. Detect finds the background by flooding in from the edges you pick, so it works best on plain or softly blurred backgrounds.</p>
+        <div class="field">
+          <span class="lab">Edges that show background</span>
+          <div class="edges" role="group" aria-label="Edges that show background">
+            <button type="button" class="chip" data-edge="top" aria-pressed="true">Top</button>
+            <button type="button" class="chip" data-edge="left" aria-pressed="true">Left</button>
+            <button type="button" class="chip" data-edge="right" aria-pressed="true">Right</button>
+            <button type="button" class="chip" data-edge="bottom" aria-pressed="false">Bottom</button>
+          </div>
+          <p class="hint">Leave off any edge the subject touches, such as the bottom of a portrait.</p>
+        </div>
+        <div class="field">
+          <div class="lab"><label for="sens">Background tolerance</label><output id="sensOut"></output></div>
+          <input type="range" id="sens" min="0" max="100" step="1" value="40">
+          <p class="hint">Higher treats more colours as background.</p>
+        </div>
+        <div class="btns">
+          <button type="button" class="btn" id="btnDetect">Detect subject</button>
+          <button type="button" class="btn" id="btnMaskClear" disabled>Clear mask</button>
+        </div>
+        <p class="hint" id="maskMsg" role="status" hidden></p>
+        <div class="field">
+          <div class="lab"><label for="bgd">Background dots</label><output id="bgdOut"></output></div>
+          <input type="range" id="bgd" min="0" max="100" step="1" value="8">
+          <p class="hint">0% leaves the background blank. 100% ignores the mask.</p>
+        </div>
+        <div class="field">
+          <div class="lab"><label for="soft">Edge softness</label><output id="softOut"></output></div>
+          <input type="range" id="soft" min="0" max="100" step="1" value="35">
+        </div>
+        <div class="field">
+          <span class="lab">Brush</span>
+          <div class="edges" role="group" aria-label="Mask brush">
+            <button type="button" class="chip" data-tool="keep" aria-pressed="false">Keep subject</button>
+            <button type="button" class="chip" data-tool="remove" aria-pressed="false">Remove background</button>
+            <button type="button" class="chip" id="btnMaskUndo" disabled>Undo</button>
+          </div>
+        </div>
+        <div class="field">
+          <div class="lab"><label for="bsize">Brush size</label><output id="bsizeOut"></output></div>
+          <input type="range" id="bsize" min="2" max="30" step="1" value="8">
+          <p class="hint">Paint on the sheet, then release to update the dots. Lower the dot count while editing for quicker previews.</p>
+        </div>
+        <label class="check"><input type="checkbox" id="maskview" checked> Show mask overlay</label>
+      </div>
+
+      <div class="group">
+        <h2>Dots</h2>
+        <div class="field">
+          <div class="lab"><label for="count">Dot count</label><output id="countOut"></output></div>
+          <input type="range" id="count" min="0" max="100" step="1" value="77">
+          <p class="hint">Up to 500,000. Above 200,000 the spacing step can take 10 to 30 seconds and the preview refreshes every few passes. Pair high counts with a small dot size.</p>
+        </div>
+        <div class="field">
+          <div class="lab"><label for="dia">Dot size</label><output id="diaOut"></output></div>
+          <input type="range" id="dia" min="0.1" max="2" step="0.05" value="0.4">
+        </div>
+        <div class="field">
+          <div class="lab"><label for="var">Size follows tone</label><output id="varOut"></output></div>
+          <input type="range" id="var" min="0" max="100" step="1" value="0">
+          <p class="hint">0% keeps every dot the same size, so darkness comes only from density. Higher values also enlarge dots in dark areas.</p>
+        </div>
+        <div class="field">
+          <div class="lab"><label for="jit">Randomness</label><output id="jitOut"></output></div>
+          <input type="range" id="jit" min="0" max="100" step="1" value="40">
+          <p class="hint">Scatters each dot around its evenly spaced position, scaled to local density. 0 looks like a regular grain, 100 is nearly pure random.</p>
+        </div>
+        <button type="button" class="btn" id="btnShuffle">Reshuffle dots</button>
+      </div>
+
+      <div class="group">
+        <h2>Tone and edges</h2>
+        <div class="field">
+          <div class="lab"><label for="bright">Brightness</label><output id="brightOut"></output></div>
+          <input type="range" id="bright" min="-50" max="50" step="1" value="0">
+        </div>
+        <div class="field">
+          <div class="lab"><label for="contrast">Contrast</label><output id="contrastOut"></output></div>
+          <input type="range" id="contrast" min="-80" max="80" step="1" value="20">
+        </div>
+        <div class="field">
+          <div class="lab"><label for="detail">Detail boost</label><output id="detailOut"></output></div>
+          <input type="range" id="detail" min="0" max="100" step="1" value="20">
+          <p class="hint">Sharpens fine patterns such as fabric folds and hair so they survive as dot structure.</p>
+        </div>
+        <div class="field">
+          <div class="lab"><label for="edge">Edge emphasis</label><output id="edgeOut"></output></div>
+          <input type="range" id="edge" min="0" max="100" step="1" value="25">
+          <p class="hint">Adds dots along contours. Too much flattens tonal gradation.</p>
+        </div>
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="auto" checked> Auto levels</label>
+          <label class="check"><input type="checkbox" id="invert"> Invert tones</label>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>Paper</h2>
+        <div class="two">
+          <div class="field"><label for="paper">Size</label>
+            <select id="paper">
+              <option value="A6">A6 · 105 × 148 mm</option>
+              <option value="A5">A5 · 148 × 210 mm</option>
+              <option value="A4" selected>A4 · 210 × 297 mm</option>
+              <option value="A3">A3 · 297 × 420 mm</option>
+              <option value="Letter">US Letter · 8.5 × 11 in</option>
+              <option value="Square">Square · 200 × 200 mm</option>
+            </select>
+          </div>
+          <div class="field"><label for="orient">Orientation</label>
+            <select id="orient">
+              <option value="auto" selected>Match image</option>
+              <option value="portrait">Portrait</option>
+              <option value="landscape">Landscape</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <div class="lab"><label for="margin">Margin</label><output id="marginOut"></output></div>
+          <input type="range" id="margin" min="0" max="40" step="1" value="10">
+        </div>
+        <div class="field"><label for="dpi">PNG resolution</label>
+          <select id="dpi">
+            <option value="150">150 dpi · draft</option>
+            <option value="300" selected>300 dpi · print</option>
+            <option value="600">600 dpi · fine dots</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>Ink and paper</h2>
+        <div class="presets" id="presets" role="group" aria-label="Colour presets"></div>
+        <p class="presetname" id="presetName"></p>
+        <div class="colors">
+          <div class="field"><label for="inkc">Ink</label><input class="color" type="color" id="inkc" value="#15171A"></div>
+          <div class="field"><label for="paperc">Paper</label><input class="color" type="color" id="paperc" value="#FBFBF8"></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <details class="adv">
+          <summary>Advanced</summary>
+          <div class="field">
+            <div class="lab"><label for="passes">Relaxation passes</label><output id="passesOut"></output></div>
+            <input type="range" id="passes" min="0" max="60" step="1" value="10">
+            <p class="hint">Each pass spaces the dots more evenly. 0 is raw random scatter. Regularity levels off after about 10 passes, so more mostly costs time.</p>
+          </div>
+        </details>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script id="src-d3" type="text/plain">// https://github.com/d3/d3-delaunay v6.0.4 Copyright 2018-2021 Observable, Inc., 2021 Mapbox
+!function(t,i){"object"==typeof exports&&"undefined"!=typeof module?i(exports):"function"==typeof define&&define.amd?define(["exports"],i):i((t="undefined"!=typeof globalThis?globalThis:t||self).d3=t.d3||{})}(this,(function(t){"use strict";const i=134217729;function e(t,i,e,n,s){let l,h,r,o,a=i[0],c=n[0],u=0,f=0;c>a==c>-a?(l=a,a=i[++u]):(l=c,c=n[++f]);let _=0;if(u<t&&f<e)for(c>a==c>-a?(h=a+l,r=l-(h-a),a=i[++u]):(h=c+l,r=l-(h-c),c=n[++f]),l=h,0!==r&&(s[_++]=r);u<t&&f<e;)c>a==c>-a?(h=l+a,o=h-l,r=l-(h-o)+(a-o),a=i[++u]):(h=l+c,o=h-l,r=l-(h-o)+(c-o),c=n[++f]),l=h,0!==r&&(s[_++]=r);for(;u<t;)h=l+a,o=h-l,r=l-(h-o)+(a-o),a=i[++u],l=h,0!==r&&(s[_++]=r);for(;f<e;)h=l+c,o=h-l,r=l-(h-o)+(c-o),c=n[++f],l=h,0!==r&&(s[_++]=r);return 0===l&&0!==_||(s[_++]=l),_}function n(t){return new Float64Array(t)}const s=n(4),l=n(8),h=n(12),r=n(16),o=n(4);function a(t,n,a,c,u,f){const _=(n-f)*(a-u),d=(t-u)*(c-f),g=_-d;if(0===_||0===d||_>0!=d>0)return g;const y=Math.abs(_+d);return Math.abs(g)>=33306690738754716e-32*y?g:-function(t,n,a,c,u,f,_){let d,g,y,m,x,p,w,v,b,T,M,A,k,$,P,S,I,z;const F=t-u,U=a-u,K=n-f,L=c-f;$=F*L,p=i*F,w=p-(p-F),v=F-w,p=i*L,b=p-(p-L),T=L-b,P=v*T-($-w*b-v*b-w*T),S=K*U,p=i*K,w=p-(p-K),v=K-w,p=i*U,b=p-(p-U),T=U-b,I=v*T-(S-w*b-v*b-w*T),M=P-I,x=P-M,s[0]=P-(M+x)+(x-I),A=$+M,x=A-$,k=$-(A-x)+(M-x),M=k-S,x=k-M,s[1]=k-(M+x)+(x-S),z=A+M,x=z-A,s[2]=A-(z-x)+(M-x),s[3]=z;let j=function(t,i){let e=i[0];for(let n=1;n<t;n++)e+=i[n];return e}(4,s),H=22204460492503146e-32*_;if(j>=H||-j>=H)return j;if(x=t-F,d=t-(F+x)+(x-u),x=a-U,y=a-(U+x)+(x-u),x=n-K,g=n-(K+x)+(x-f),x=c-L,m=c-(L+x)+(x-f),0===d&&0===g&&0===y&&0===m)return j;if(H=11093356479670487e-47*_+33306690738754706e-32*Math.abs(j),j+=F*m+L*d-(K*y+U*g),j>=H||-j>=H)return j;$=d*L,p=i*d,w=p-(p-d),v=d-w,p=i*L,b=p-(p-L),T=L-b,P=v*T-($-w*b-v*b-w*T),S=g*U,p=i*g,w=p-(p-g),v=g-w,p=i*U,b=p-(p-U),T=U-b,I=v*T-(S-w*b-v*b-w*T),M=P-I,x=P-M,o[0]=P-(M+x)+(x-I),A=$+M,x=A-$,k=$-(A-x)+(M-x),M=k-S,x=k-M,o[1]=k-(M+x)+(x-S),z=A+M,x=z-A,o[2]=A-(z-x)+(M-x),o[3]=z;const E=e(4,s,4,o,l);$=F*m,p=i*F,w=p-(p-F),v=F-w,p=i*m,b=p-(p-m),T=m-b,P=v*T-($-w*b-v*b-w*T),S=K*y,p=i*K,w=p-(p-K),v=K-w,p=i*y,b=p-(p-y),T=y-b,I=v*T-(S-w*b-v*b-w*T),M=P-I,x=P-M,o[0]=P-(M+x)+(x-I),A=$+M,x=A-$,k=$-(A-x)+(M-x),M=k-S,x=k-M,o[1]=k-(M+x)+(x-S),z=A+M,x=z-A,o[2]=A-(z-x)+(M-x),o[3]=z;const C=e(E,l,4,o,h);$=d*m,p=i*d,w=p-(p-d),v=d-w,p=i*m,b=p-(p-m),T=m-b,P=v*T-($-w*b-v*b-w*T),S=g*y,p=i*g,w=p-(p-g),v=g-w,p=i*y,b=p-(p-y),T=y-b,I=v*T-(S-w*b-v*b-w*T),M=P-I,x=P-M,o[0]=P-(M+x)+(x-I),A=$+M,x=A-$,k=$-(A-x)+(M-x),M=k-S,x=k-M,o[1]=k-(M+x)+(x-S),z=A+M,x=z-A,o[2]=A-(z-x)+(M-x),o[3]=z;const N=e(C,h,4,o,r);return r[N-1]}(t,n,a,c,u,f,y)}const c=Math.pow(2,-52),u=new Uint32Array(512);class f{static from(t,i=x,e=p){const n=t.length,s=new Float64Array(2*n);for(let l=0;l<n;l++){const n=t[l];s[2*l]=i(n),s[2*l+1]=e(n)}return new f(s)}constructor(t){const i=t.length>>1;if(i>0&&"number"!=typeof t[0])throw new Error("Expected coords to contain numbers.");this.coords=t;const e=Math.max(2*i-5,0);this._triangles=new Uint32Array(3*e),this._halfedges=new Int32Array(3*e),this._hashSize=Math.ceil(Math.sqrt(i)),this._hullPrev=new Uint32Array(i),this._hullNext=new Uint32Array(i),this._hullTri=new Uint32Array(i),this._hullHash=new Int32Array(this._hashSize).fill(-1),this._ids=new Uint32Array(i),this._dists=new Float64Array(i),this.update()}update(){const{coords:t,_hullPrev:i,_hullNext:e,_hullTri:n,_hullHash:s}=this,l=t.length>>1;let h=1/0,r=1/0,o=-1/0,u=-1/0;for(let i=0;i<l;i++){const e=t[2*i],n=t[2*i+1];e<h&&(h=e),n<r&&(r=n),e>o&&(o=e),n>u&&(u=n),this._ids[i]=i}const f=(h+o)/2,d=(r+u)/2;let m,x,p,w=1/0;for(let i=0;i<l;i++){const e=_(f,d,t[2*i],t[2*i+1]);e<w&&(m=i,w=e)}const v=t[2*m],b=t[2*m+1];w=1/0;for(let i=0;i<l;i++){if(i===m)continue;const e=_(v,b,t[2*i],t[2*i+1]);e<w&&e>0&&(x=i,w=e)}let T=t[2*x],M=t[2*x+1],A=1/0;for(let i=0;i<l;i++){if(i===m||i===x)continue;const e=g(v,b,T,M,t[2*i],t[2*i+1]);e<A&&(p=i,A=e)}let k=t[2*p],$=t[2*p+1];if(A===1/0){for(let i=0;i<l;i++)this._dists[i]=t[2*i]-t[0]||t[2*i+1]-t[1];y(this._ids,this._dists,0,l-1);const i=new Uint32Array(l);let e=0;for(let t=0,n=-1/0;t<l;t++){const s=this._ids[t];this._dists[s]>n&&(i[e++]=s,n=this._dists[s])}return this.hull=i.subarray(0,e),this.triangles=new Uint32Array(0),void(this.halfedges=new Uint32Array(0))}if(a(v,b,T,M,k,$)<0){const t=x,i=T,e=M;x=p,T=k,M=$,p=t,k=i,$=e}const P=function(t,i,e,n,s,l){const h=e-t,r=n-i,o=s-t,a=l-i,c=h*h+r*r,u=o*o+a*a,f=.5/(h*a-r*o);return{x:t+(a*c-r*u)*f,y:i+(h*u-o*c)*f}}(v,b,T,M,k,$);this._cx=P.x,this._cy=P.y;for(let i=0;i<l;i++)this._dists[i]=_(t[2*i],t[2*i+1],P.x,P.y);y(this._ids,this._dists,0,l-1),this._hullStart=m;let S=3;e[m]=i[p]=x,e[x]=i[m]=p,e[p]=i[x]=m,n[m]=0,n[x]=1,n[p]=2,s.fill(-1),s[this._hashKey(v,b)]=m,s[this._hashKey(T,M)]=x,s[this._hashKey(k,$)]=p,this.trianglesLen=0,this._addTriangle(m,x,p,-1,-1,-1);for(let l,h,r=0;r<this._ids.length;r++){const o=this._ids[r],u=t[2*o],f=t[2*o+1];if(r>0&&Math.abs(u-l)<=c&&Math.abs(f-h)<=c)continue;if(l=u,h=f,o===m||o===x||o===p)continue;let _=0;for(let t=0,i=this._hashKey(u,f);t<this._hashSize&&(_=s[(i+t)%this._hashSize],-1===_||_===e[_]);t++);_=i[_];let d,g=_;for(;d=e[g],a(u,f,t[2*g],t[2*g+1],t[2*d],t[2*d+1])>=0;)if(g=d,g===_){g=-1;break}if(-1===g)continue;let y=this._addTriangle(g,o,e[g],-1,-1,n[g]);n[o]=this._legalize(y+2),n[g]=y,S++;let w=e[g];for(;d=e[w],a(u,f,t[2*w],t[2*w+1],t[2*d],t[2*d+1])<0;)y=this._addTriangle(w,o,d,n[o],-1,n[w]),n[o]=this._legalize(y+2),e[w]=w,S--,w=d;if(g===_)for(;d=i[g],a(u,f,t[2*d],t[2*d+1],t[2*g],t[2*g+1])<0;)y=this._addTriangle(d,o,g,-1,n[g],n[d]),this._legalize(y+2),n[d]=y,e[g]=g,S--,g=d;this._hullStart=i[o]=g,e[g]=i[w]=o,e[o]=w,s[this._hashKey(u,f)]=o,s[this._hashKey(t[2*g],t[2*g+1])]=g}this.hull=new Uint32Array(S);for(let t=0,i=this._hullStart;t<S;t++)this.hull[t]=i,i=e[i];this.triangles=this._triangles.subarray(0,this.trianglesLen),this.halfedges=this._halfedges.subarray(0,this.trianglesLen)}_hashKey(t,i){return Math.floor(function(t,i){const e=t/(Math.abs(t)+Math.abs(i));return(i>0?3-e:1+e)/4}(t-this._cx,i-this._cy)*this._hashSize)%this._hashSize}_legalize(t){const{_triangles:i,_halfedges:e,coords:n}=this;let s=0,l=0;for(;;){const h=e[t],r=t-t%3;if(l=r+(t+2)%3,-1===h){if(0===s)break;t=u[--s];continue}const o=h-h%3,a=r+(t+1)%3,c=o+(h+2)%3,f=i[l],_=i[t],g=i[a],y=i[c];if(d(n[2*f],n[2*f+1],n[2*_],n[2*_+1],n[2*g],n[2*g+1],n[2*y],n[2*y+1])){i[t]=y,i[h]=f;const n=e[c];if(-1===n){let i=this._hullStart;do{if(this._hullTri[i]===c){this._hullTri[i]=t;break}i=this._hullPrev[i]}while(i!==this._hullStart)}this._link(t,n),this._link(h,e[l]),this._link(l,c);const r=o+(h+1)%3;s<u.length&&(u[s++]=r)}else{if(0===s)break;t=u[--s]}}return l}_link(t,i){this._halfedges[t]=i,-1!==i&&(this._halfedges[i]=t)}_addTriangle(t,i,e,n,s,l){const h=this.trianglesLen;return this._triangles[h]=t,this._triangles[h+1]=i,this._triangles[h+2]=e,this._link(h,n),this._link(h+1,s),this._link(h+2,l),this.trianglesLen+=3,h}}function _(t,i,e,n){const s=t-e,l=i-n;return s*s+l*l}function d(t,i,e,n,s,l,h,r){const o=t-h,a=i-r,c=e-h,u=n-r,f=s-h,_=l-r,d=c*c+u*u,g=f*f+_*_;return o*(u*g-d*_)-a*(c*g-d*f)+(o*o+a*a)*(c*_-u*f)<0}function g(t,i,e,n,s,l){const h=e-t,r=n-i,o=s-t,a=l-i,c=h*h+r*r,u=o*o+a*a,f=.5/(h*a-r*o),_=(a*c-r*u)*f,d=(h*u-o*c)*f;return _*_+d*d}function y(t,i,e,n){if(n-e<=20)for(let s=e+1;s<=n;s++){const n=t[s],l=i[n];let h=s-1;for(;h>=e&&i[t[h]]>l;)t[h+1]=t[h--];t[h+1]=n}else{let s=e+1,l=n;m(t,e+n>>1,s),i[t[e]]>i[t[n]]&&m(t,e,n),i[t[s]]>i[t[n]]&&m(t,s,n),i[t[e]]>i[t[s]]&&m(t,e,s);const h=t[s],r=i[h];for(;;){do{s++}while(i[t[s]]<r);do{l--}while(i[t[l]]>r);if(l<s)break;m(t,s,l)}t[e+1]=t[l],t[l]=h,n-s+1>=l-e?(y(t,i,s,n),y(t,i,e,l-1)):(y(t,i,e,l-1),y(t,i,s,n))}}function m(t,i,e){const n=t[i];t[i]=t[e],t[e]=n}function x(t){return t[0]}function p(t){return t[1]}const w=1e-6;class v{constructor(){this._x0=this._y0=this._x1=this._y1=null,this._=""}moveTo(t,i){this._+=`M${this._x0=this._x1=+t},${this._y0=this._y1=+i}`}closePath(){null!==this._x1&&(this._x1=this._x0,this._y1=this._y0,this._+="Z")}lineTo(t,i){this._+=`L${this._x1=+t},${this._y1=+i}`}arc(t,i,e){const n=(t=+t)+(e=+e),s=i=+i;if(e<0)throw new Error("negative radius");null===this._x1?this._+=`M${n},${s}`:(Math.abs(this._x1-n)>w||Math.abs(this._y1-s)>w)&&(this._+="L"+n+","+s),e&&(this._+=`A${e},${e},0,1,1,${t-e},${i}A${e},${e},0,1,1,${this._x1=n},${this._y1=s}`)}rect(t,i,e,n){this._+=`M${this._x0=this._x1=+t},${this._y0=this._y1=+i}h${+e}v${+n}h${-e}Z`}value(){return this._||null}}class b{constructor(){this._=[]}moveTo(t,i){this._.push([t,i])}closePath(){this._.push(this._[0].slice())}lineTo(t,i){this._.push([t,i])}value(){return this._.length?this._:null}}class T{constructor(t,[i,e,n,s]=[0,0,960,500]){if(!((n=+n)>=(i=+i)&&(s=+s)>=(e=+e)))throw new Error("invalid bounds");this.delaunay=t,this._circumcenters=new Float64Array(2*t.points.length),this.vectors=new Float64Array(2*t.points.length),this.xmax=n,this.xmin=i,this.ymax=s,this.ymin=e,this._init()}update(){return this.delaunay.update(),this._init(),this}_init(){const{delaunay:{points:t,hull:i,triangles:e},vectors:n}=this;let s,l;const h=this.circumcenters=this._circumcenters.subarray(0,e.length/3*2);for(let n,r,o=0,a=0,c=e.length;o<c;o+=3,a+=2){const c=2*e[o],u=2*e[o+1],f=2*e[o+2],_=t[c],d=t[c+1],g=t[u],y=t[u+1],m=t[f],x=t[f+1],p=g-_,w=y-d,v=m-_,b=x-d,T=2*(p*b-w*v);if(Math.abs(T)<1e-9){if(void 0===s){s=l=0;for(const e of i)s+=t[2*e],l+=t[2*e+1];s/=i.length,l/=i.length}const e=1e9*Math.sign((s-_)*b-(l-d)*v);n=(_+m)/2-e*b,r=(d+x)/2+e*v}else{const t=1/T,i=p*p+w*w,e=v*v+b*b;n=_+(b*i-w*e)*t,r=d+(p*e-v*i)*t}h[a]=n,h[a+1]=r}let r,o,a,c=i[i.length-1],u=4*c,f=t[2*c],_=t[2*c+1];n.fill(0);for(let e=0;e<i.length;++e)c=i[e],r=u,o=f,a=_,u=4*c,f=t[2*c],_=t[2*c+1],n[r+2]=n[u]=a-_,n[r+3]=n[u+1]=f-o}render(t){const i=null==t?t=new v:void 0,{delaunay:{halfedges:e,inedges:n,hull:s},circumcenters:l,vectors:h}=this;if(s.length<=1)return null;for(let i=0,n=e.length;i<n;++i){const n=e[i];if(n<i)continue;const s=2*Math.floor(i/3),h=2*Math.floor(n/3),r=l[s],o=l[s+1],a=l[h],c=l[h+1];this._renderSegment(r,o,a,c,t)}let r,o=s[s.length-1];for(let i=0;i<s.length;++i){r=o,o=s[i];const e=2*Math.floor(n[o]/3),a=l[e],c=l[e+1],u=4*r,f=this._project(a,c,h[u+2],h[u+3]);f&&this._renderSegment(a,c,f[0],f[1],t)}return i&&i.value()}renderBounds(t){const i=null==t?t=new v:void 0;return t.rect(this.xmin,this.ymin,this.xmax-this.xmin,this.ymax-this.ymin),i&&i.value()}renderCell(t,i){const e=null==i?i=new v:void 0,n=this._clip(t);if(null===n||!n.length)return;i.moveTo(n[0],n[1]);let s=n.length;for(;n[0]===n[s-2]&&n[1]===n[s-1]&&s>1;)s-=2;for(let t=2;t<s;t+=2)n[t]===n[t-2]&&n[t+1]===n[t-1]||i.lineTo(n[t],n[t+1]);return i.closePath(),e&&e.value()}*cellPolygons(){const{delaunay:{points:t}}=this;for(let i=0,e=t.length/2;i<e;++i){const t=this.cellPolygon(i);t&&(t.index=i,yield t)}}cellPolygon(t){const i=new b;return this.renderCell(t,i),i.value()}_renderSegment(t,i,e,n,s){let l;const h=this._regioncode(t,i),r=this._regioncode(e,n);0===h&&0===r?(s.moveTo(t,i),s.lineTo(e,n)):(l=this._clipSegment(t,i,e,n,h,r))&&(s.moveTo(l[0],l[1]),s.lineTo(l[2],l[3]))}contains(t,i,e){return(i=+i)==i&&(e=+e)==e&&this.delaunay._step(t,i,e)===t}*neighbors(t){const i=this._clip(t);if(i)for(const e of this.delaunay.neighbors(t)){const t=this._clip(e);if(t)t:for(let n=0,s=i.length;n<s;n+=2)for(let l=0,h=t.length;l<h;l+=2)if(i[n]===t[l]&&i[n+1]===t[l+1]&&i[(n+2)%s]===t[(l+h-2)%h]&&i[(n+3)%s]===t[(l+h-1)%h]){yield e;break t}}}_cell(t){const{circumcenters:i,delaunay:{inedges:e,halfedges:n,triangles:s}}=this,l=e[t];if(-1===l)return null;const h=[];let r=l;do{const e=Math.floor(r/3);if(h.push(i[2*e],i[2*e+1]),r=r%3==2?r-2:r+1,s[r]!==t)break;r=n[r]}while(r!==l&&-1!==r);return h}_clip(t){if(0===t&&1===this.delaunay.hull.length)return[this.xmax,this.ymin,this.xmax,this.ymax,this.xmin,this.ymax,this.xmin,this.ymin];const i=this._cell(t);if(null===i)return null;const{vectors:e}=this,n=4*t;return this._simplify(e[n]||e[n+1]?this._clipInfinite(t,i,e[n],e[n+1],e[n+2],e[n+3]):this._clipFinite(t,i))}_clipFinite(t,i){const e=i.length;let n,s,l,h,r=null,o=i[e-2],a=i[e-1],c=this._regioncode(o,a),u=0;for(let f=0;f<e;f+=2)if(n=o,s=a,o=i[f],a=i[f+1],l=c,c=this._regioncode(o,a),0===l&&0===c)h=u,u=0,r?r.push(o,a):r=[o,a];else{let i,e,f,_,d;if(0===l){if(null===(i=this._clipSegment(n,s,o,a,l,c)))continue;[e,f,_,d]=i}else{if(null===(i=this._clipSegment(o,a,n,s,c,l)))continue;[_,d,e,f]=i,h=u,u=this._edgecode(e,f),h&&u&&this._edge(t,h,u,r,r.length),r?r.push(e,f):r=[e,f]}h=u,u=this._edgecode(_,d),h&&u&&this._edge(t,h,u,r,r.length),r?r.push(_,d):r=[_,d]}if(r)h=u,u=this._edgecode(r[0],r[1]),h&&u&&this._edge(t,h,u,r,r.length);else if(this.contains(t,(this.xmin+this.xmax)/2,(this.ymin+this.ymax)/2))return[this.xmax,this.ymin,this.xmax,this.ymax,this.xmin,this.ymax,this.xmin,this.ymin];return r}_clipSegment(t,i,e,n,s,l){const h=s<l;for(h&&([t,i,e,n,s,l]=[e,n,t,i,l,s]);;){if(0===s&&0===l)return h?[e,n,t,i]:[t,i,e,n];if(s&l)return null;let r,o,a=s||l;8&a?(r=t+(e-t)*(this.ymax-i)/(n-i),o=this.ymax):4&a?(r=t+(e-t)*(this.ymin-i)/(n-i),o=this.ymin):2&a?(o=i+(n-i)*(this.xmax-t)/(e-t),r=this.xmax):(o=i+(n-i)*(this.xmin-t)/(e-t),r=this.xmin),s?(t=r,i=o,s=this._regioncode(t,i)):(e=r,n=o,l=this._regioncode(e,n))}}_clipInfinite(t,i,e,n,s,l){let h,r=Array.from(i);if((h=this._project(r[0],r[1],e,n))&&r.unshift(h[0],h[1]),(h=this._project(r[r.length-2],r[r.length-1],s,l))&&r.push(h[0],h[1]),r=this._clipFinite(t,r))for(let i,e=0,n=r.length,s=this._edgecode(r[n-2],r[n-1]);e<n;e+=2)i=s,s=this._edgecode(r[e],r[e+1]),i&&s&&(e=this._edge(t,i,s,r,e),n=r.length);else this.contains(t,(this.xmin+this.xmax)/2,(this.ymin+this.ymax)/2)&&(r=[this.xmin,this.ymin,this.xmax,this.ymin,this.xmax,this.ymax,this.xmin,this.ymax]);return r}_edge(t,i,e,n,s){for(;i!==e;){let e,l;switch(i){case 5:i=4;continue;case 4:i=6,e=this.xmax,l=this.ymin;break;case 6:i=2;continue;case 2:i=10,e=this.xmax,l=this.ymax;break;case 10:i=8;continue;case 8:i=9,e=this.xmin,l=this.ymax;break;case 9:i=1;continue;case 1:i=5,e=this.xmin,l=this.ymin}n[s]===e&&n[s+1]===l||!this.contains(t,e,l)||(n.splice(s,0,e,l),s+=2)}return s}_project(t,i,e,n){let s,l,h,r=1/0;if(n<0){if(i<=this.ymin)return null;(s=(this.ymin-i)/n)<r&&(h=this.ymin,l=t+(r=s)*e)}else if(n>0){if(i>=this.ymax)return null;(s=(this.ymax-i)/n)<r&&(h=this.ymax,l=t+(r=s)*e)}if(e>0){if(t>=this.xmax)return null;(s=(this.xmax-t)/e)<r&&(l=this.xmax,h=i+(r=s)*n)}else if(e<0){if(t<=this.xmin)return null;(s=(this.xmin-t)/e)<r&&(l=this.xmin,h=i+(r=s)*n)}return[l,h]}_edgecode(t,i){return(t===this.xmin?1:t===this.xmax?2:0)|(i===this.ymin?4:i===this.ymax?8:0)}_regioncode(t,i){return(t<this.xmin?1:t>this.xmax?2:0)|(i<this.ymin?4:i>this.ymax?8:0)}_simplify(t){if(t&&t.length>4){for(let i=0;i<t.length;i+=2){const e=(i+2)%t.length,n=(i+4)%t.length;(t[i]===t[e]&&t[e]===t[n]||t[i+1]===t[e+1]&&t[e+1]===t[n+1])&&(t.splice(e,2),i-=2)}t.length||(t=null)}return t}}const M=2*Math.PI,A=Math.pow;function k(t){return t[0]}function $(t){return t[1]}function P(t,i,e){return[t+Math.sin(t+i)*e,i+Math.cos(t-i)*e]}class S{static from(t,i=k,e=$,n){return new S("length"in t?function(t,i,e,n){const s=t.length,l=new Float64Array(2*s);for(let h=0;h<s;++h){const s=t[h];l[2*h]=i.call(n,s,h,t),l[2*h+1]=e.call(n,s,h,t)}return l}(t,i,e,n):Float64Array.from(function*(t,i,e,n){let s=0;for(const l of t)yield i.call(n,l,s,t),yield e.call(n,l,s,t),++s}(t,i,e,n)))}constructor(t){this._delaunator=new f(t),this.inedges=new Int32Array(t.length/2),this._hullIndex=new Int32Array(t.length/2),this.points=this._delaunator.coords,this._init()}update(){return this._delaunator.update(),this._init(),this}_init(){const t=this._delaunator,i=this.points;if(t.hull&&t.hull.length>2&&function(t){const{triangles:i,coords:e}=t;for(let t=0;t<i.length;t+=3){const n=2*i[t],s=2*i[t+1],l=2*i[t+2];if((e[l]-e[n])*(e[s+1]-e[n+1])-(e[s]-e[n])*(e[l+1]-e[n+1])>1e-10)return!1}return!0}(t)){this.collinear=Int32Array.from({length:i.length/2},((t,i)=>i)).sort(((t,e)=>i[2*t]-i[2*e]||i[2*t+1]-i[2*e+1]));const t=this.collinear[0],e=this.collinear[this.collinear.length-1],n=[i[2*t],i[2*t+1],i[2*e],i[2*e+1]],s=1e-8*Math.hypot(n[3]-n[1],n[2]-n[0]);for(let t=0,e=i.length/2;t<e;++t){const e=P(i[2*t],i[2*t+1],s);i[2*t]=e[0],i[2*t+1]=e[1]}this._delaunator=new f(i)}else delete this.collinear;const e=this.halfedges=this._delaunator.halfedges,n=this.hull=this._delaunator.hull,s=this.triangles=this._delaunator.triangles,l=this.inedges.fill(-1),h=this._hullIndex.fill(-1);for(let t=0,i=e.length;t<i;++t){const i=s[t%3==2?t-2:t+1];-1!==e[t]&&-1!==l[i]||(l[i]=t)}for(let t=0,i=n.length;t<i;++t)h[n[t]]=t;n.length<=2&&n.length>0&&(this.triangles=new Int32Array(3).fill(-1),this.halfedges=new Int32Array(3).fill(-1),this.triangles[0]=n[0],l[n[0]]=1,2===n.length&&(l[n[1]]=0,this.triangles[1]=n[1],this.triangles[2]=n[1]))}voronoi(t){return new T(this,t)}*neighbors(t){const{inedges:i,hull:e,_hullIndex:n,halfedges:s,triangles:l,collinear:h}=this;if(h){const i=h.indexOf(t);return i>0&&(yield h[i-1]),void(i<h.length-1&&(yield h[i+1]))}const r=i[t];if(-1===r)return;let o=r,a=-1;do{if(yield a=l[o],o=o%3==2?o-2:o+1,l[o]!==t)return;if(o=s[o],-1===o){const i=e[(n[t]+1)%e.length];return void(i!==a&&(yield i))}}while(o!==r)}find(t,i,e=0){if((t=+t)!=t||(i=+i)!=i)return-1;const n=e;let s;for(;(s=this._step(e,t,i))>=0&&s!==e&&s!==n;)e=s;return s}_step(t,i,e){const{inedges:n,hull:s,_hullIndex:l,halfedges:h,triangles:r,points:o}=this;if(-1===n[t]||!o.length)return(t+1)%(o.length>>1);let a=t,c=A(i-o[2*t],2)+A(e-o[2*t+1],2);const u=n[t];let f=u;do{let n=r[f];const u=A(i-o[2*n],2)+A(e-o[2*n+1],2);if(u<c&&(c=u,a=n),f=f%3==2?f-2:f+1,r[f]!==t)break;if(f=h[f],-1===f){if(f=s[(l[t]+1)%s.length],f!==n&&A(i-o[2*f],2)+A(e-o[2*f+1],2)<c)return f;break}}while(f!==u);return a}render(t){const i=null==t?t=new v:void 0,{points:e,halfedges:n,triangles:s}=this;for(let i=0,l=n.length;i<l;++i){const l=n[i];if(l<i)continue;const h=2*s[i],r=2*s[l];t.moveTo(e[h],e[h+1]),t.lineTo(e[r],e[r+1])}return this.renderHull(t),i&&i.value()}renderPoints(t,i){void 0!==i||t&&"function"==typeof t.moveTo||(i=t,t=null),i=null==i?2:+i;const e=null==t?t=new v:void 0,{points:n}=this;for(let e=0,s=n.length;e<s;e+=2){const s=n[e],l=n[e+1];t.moveTo(s+i,l),t.arc(s,l,i,0,M)}return e&&e.value()}renderHull(t){const i=null==t?t=new v:void 0,{hull:e,points:n}=this,s=2*e[0],l=e.length;t.moveTo(n[s],n[s+1]);for(let i=1;i<l;++i){const s=2*e[i];t.lineTo(n[s],n[s+1])}return t.closePath(),i&&i.value()}hullPolygon(){const t=new b;return this.renderHull(t),t.value()}renderTriangle(t,i){const e=null==i?i=new v:void 0,{points:n,triangles:s}=this,l=2*s[t*=3],h=2*s[t+1],r=2*s[t+2];return i.moveTo(n[l],n[l+1]),i.lineTo(n[h],n[h+1]),i.lineTo(n[r],n[r+1]),i.closePath(),e&&e.value()}*trianglePolygons(){const{triangles:t}=this;for(let i=0,e=t.length/3;i<e;++i)yield this.trianglePolygon(i)}trianglePolygon(t){const i=new b;return this.renderTriangle(t,i),i.value()}}t.Delaunay=S,t.Voronoi=T,Object.defineProperty(t,"__esModule",{value:!0})}));
+</script>
+<script id="src-engine" type="text/plain">const Stipple = (() => {
+  let DelaunayCls = null;
+  const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
+
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // Separable [1 2 1]/4 blur with clamped borders.
+  function blur3(src, W, H) {
+    const tmp = new Float32Array(W * H);
+    const out = new Float32Array(W * H);
+    for (let y = 0; y < H; y++) {
+      const r = y * W;
+      for (let x = 0; x < W; x++) {
+        const a = src[r + (x > 0 ? x - 1 : 0)], b = src[r + x], c = src[r + (x < W - 1 ? x + 1 : x)];
+        tmp[r + x] = (a + 2 * b + c) * 0.25;
+      }
+    }
+    for (let y = 0; y < H; y++) {
+      const y0 = (y > 0 ? y - 1 : 0) * W, y1 = y * W, y2 = (y < H - 1 ? y + 1 : y) * W;
+      for (let x = 0; x < W; x++) out[y1 + x] = (tmp[y0 + x] + 2 * tmp[y1 + x] + tmp[y2 + x]) * 0.25;
+    }
+    return out;
+  }
+
+  // Sobel gradient magnitude of a lightly smoothed image, scaled so the 95th percentile maps to 1.
+  function edgeMap(gray, W, H) {
+    const g = blur3(blur3(gray, W, H), W, H);
+    const mag = new Float32Array(W * H);
+    for (let y = 1; y < H - 1; y++) {
+      for (let x = 1; x < W - 1; x++) {
+        const i = y * W + x;
+        const gx = -g[i - W - 1] - 2 * g[i - 1] - g[i + W - 1] + g[i - W + 1] + 2 * g[i + 1] + g[i + W + 1];
+        const gy = -g[i - W - 1] - 2 * g[i - W] - g[i - W + 1] + g[i + W - 1] + 2 * g[i + W] + g[i + W + 1];
+        mag[i] = Math.sqrt(gx * gx + gy * gy);
+      }
+    }
+    const sorted = Float32Array.from(mag).sort();
+    const p95 = sorted[Math.floor(sorted.length * 0.95)];
+    const out = new Float32Array(W * H);
+    if (p95 > 1e-6) for (let i = 0; i < out.length; i++) out[i] = Math.min(1, mag[i] / p95);
+    return out;
+  }
+
+  // Wide blur used as the "base" layer for detail boost (unsharp mask). Radius scales with raster size.
+  function detailBlur(gray, W, H) {
+    let g = gray;
+    const passes = Math.max(2, Math.round(Math.max(W, H) / 110));
+    for (let k = 0; k < passes; k++) g = blur3(g, W, H);
+    return g;
+  }
+
+  // o: {auto, invert, bright (-0.5..0.5), contrast (-0.8..0.8), edge (0..1.4), detail (0..1)}
+  // Returns per-pixel weight rho (high = more dots) and its cumulative distribution for sampling.
+  function buildDensity(gray0, blur, edge, W, H, o) {
+    const n = W * H;
+    const kd = (o.detail || 0) * 2.5;
+    const gray = new Float32Array(n);
+    for (let i = 0; i < n; i++) gray[i] = gray0[i] + kd * (gray0[i] - blur[i]);
+    // Optional subject mask (1 = subject, 0 = background): feathered, resampled to this raster, used to thin the background.
+    let mk = null;
+    if (o.mask && o.mask.data) {
+      let md = o.mask.data;
+      for (let q = 0; q < (o.feather | 0); q++) md = blur3(md, o.mask.w, o.mask.h);
+      const mw = o.mask.w, mh = o.mask.h;
+      mk = new Float32Array(n);
+      for (let y = 0; y < H; y++) {
+        const fy = Math.min(mh - 1, Math.max(0, ((y + 0.5) * mh) / H - 0.5)), y0 = fy | 0, y1 = Math.min(mh - 1, y0 + 1), ty = fy - y0;
+        for (let x = 0; x < W; x++) {
+          const fx = Math.min(mw - 1, Math.max(0, ((x + 0.5) * mw) / W - 0.5)), x0 = fx | 0, x1 = Math.min(mw - 1, x0 + 1), tx = fx - x0;
+          const top = md[y0 * mw + x0] * (1 - tx) + md[y0 * mw + x1] * tx, bot = md[y1 * mw + x0] * (1 - tx) + md[y1 * mw + x1] * tx;
+          mk[y * W + x] = top * (1 - ty) + bot * ty;
+        }
+      }
+    }
+    const bgLevel = o.bg == null ? 1 : o.bg;
+    let lo = 0, hi = 1;
+    if (o.auto) {
+      const hist = new Uint32Array(256);
+      let cnt = 0; // with a mask, levels are measured on the subject only so a dark backdrop does not skew them
+      for (let i = 0; i < n; i++) if (!mk || mk[i] > 0.5) { hist[Math.min(255, (clamp01(gray[i]) * 255) | 0)]++; cnt++; }
+      if (cnt < n * 0.002) { hist.fill(0); cnt = n; for (let i = 0; i < n; i++) hist[Math.min(255, (clamp01(gray[i]) * 255) | 0)]++; }
+      let acc = 0, a = 0, b = 255;
+      for (let k = 0; k < 256; k++) { acc += hist[k]; if (acc >= cnt * 0.01) { a = k; break; } }
+      acc = 0;
+      for (let k = 255; k >= 0; k--) { acc += hist[k]; if (acc >= cnt * 0.01) { b = k; break; } }
+      lo = a / 255; hi = b / 255;
+      if (hi - lo < 0.05) { lo = 0; hi = 1; }
+    }
+    const k = Math.tan((o.contrast + 1) * Math.PI / 4);
+    const rho = new Float32Array(n);
+    const cdf = new Float64Array(n);
+    let total = 0;
+    for (let i = 0; i < n; i++) {
+      let l = clamp01((gray[i] - lo) / (hi - lo));
+      l = clamp01((l - 0.5) * k + 0.5 + o.bright);
+      const f = mk ? bgLevel + (1 - bgLevel) * mk[i] : 1;
+      const d = ((o.invert ? l : 1 - l) + o.edge * edge[i]) * f;
+      rho[i] = d;
+      total += d;
+      cdf[i] = total;
+    }
+    if (total <= 1e-9) { // blank image: avoid a degenerate distribution
+      total = 0;
+      for (let i = 0; i < n; i++) { rho[i] = 1e-3; total += 1e-3; cdf[i] = total; }
+    }
+    return { rho, cdf, total };
+  }
+
+  function samplePoint(cdf, total, W, rng, out, j) {
+    const r = rng() * total;
+    let lo = 0, hi = cdf.length - 1;
+    while (lo < hi) { const m = (lo + hi) >> 1; if (cdf[m] >= r) hi = m; else lo = m + 1; }
+    out[j] = (lo % W) + rng();
+    out[j + 1] = ((lo / W) | 0) + rng();
+  }
+
+  function initPoints(N, dens, W, rng) {
+    const pts = new Float64Array(N * 2);
+    for (let i = 0; i < N; i++) samplePoint(dens.cdf, dens.total, W, rng, pts, i * 2);
+    return pts;
+  }
+
+  // One step of weighted Lloyd relaxation: every dot moves toward the density-weighted centroid of its Voronoi cell.
+  function relaxStep(pts, N, dens, W, H, rng, t) {
+    const del = new DelaunayCls(pts);
+    const rho = dens.rho;
+    const sw = new Float64Array(N), sx = new Float64Array(N), sy = new Float64Array(N);
+    let idx = 0;
+    for (let y = 0; y < H; y++) {
+      const row = y * W, py = y + 0.5;
+      for (let x = 0; x < W; x++) {
+        const w = rho[row + x];
+        if (w < 1e-4) continue;
+        idx = del.find(x + 0.5, py, idx);
+        sw[idx] += w; sx[idx] += w * (x + 0.5); sy[idx] += w * py;
+      }
+    }
+    const wob = (1 - t) * (1 - t);
+    for (let i = 0; i < N; i++) {
+      const j = i * 2;
+      if (sw[i] > 1e-9) {
+        const cx = sx[i] / sw[i], cy = sy[i] / sw[i];
+        let nx = pts[j] + (cx - pts[j]) * 1.8 + (rng() - 0.5) * wob;
+        let ny = pts[j + 1] + (cy - pts[j + 1]) * 1.8 + (rng() - 0.5) * wob;
+        pts[j] = nx < 0 ? 0 : nx > W ? W : nx;
+        pts[j + 1] = ny < 0 ? 0 : ny > H ? H : ny;
+      } else {
+        samplePoint(dens.cdf, dens.total, W, rng, pts, j); // empty cell: relocate to where ink is needed
+      }
+    }
+  }
+
+  function toneAt(pts, N, dens, W, H) {
+    const tone = new Float32Array(N);
+    for (let i = 0; i < N; i++) {
+      const x = Math.min(W - 1, Math.max(0, pts[i * 2] | 0));
+      const y = Math.min(H - 1, Math.max(0, pts[i * 2 + 1] | 0));
+      tone[i] = clamp01(dens.rho[y * W + x]);
+    }
+    return tone;
+  }
+
+  // Local dot spacing (in raster px) implied by the density at each dot: 1 / sqrt(dots per px^2).
+  function spacingAt(pts, N, dens, W, H) {
+    const sp = new Float32Array(N);
+    const cap = 0.05 * Math.max(W, H);
+    for (let i = 0; i < N; i++) {
+      const x = Math.min(W - 1, Math.max(0, pts[i * 2] | 0));
+      const y = Math.min(H - 1, Math.max(0, pts[i * 2 + 1] | 0));
+      const lambda = (N * Math.max(dens.rho[y * W + x], 1e-6)) / dens.total;
+      sp[i] = Math.min(cap, 1 / Math.sqrt(lambda));
+    }
+    return sp;
+  }
+
+  // Fixed gaussian offsets (unit sigma), one pair per dot, so randomness can be rescaled without re-solving.
+  function gaussOffsets(N, rng) {
+    const off = new Float32Array(N * 2);
+    for (let i = 0; i < N; i++) {
+      const r = Math.sqrt(-2 * Math.log(Math.max(rng(), 1e-12))), a = 6.283185307 * rng();
+      off[i * 2] = r * Math.cos(a); off[i * 2 + 1] = r * Math.sin(a);
+    }
+    return off;
+  }
+
+  return { mulberry32, blur3, edgeMap, detailBlur, buildDensity, initPoints, relaxStep, toneAt, spacingAt, gaussOffsets, setDelaunay: (c) => { DelaunayCls = c; } };
+})();
+</script>
+<script>// https://github.com/d3/d3-delaunay v6.0.4 Copyright 2018-2021 Observable, Inc., 2021 Mapbox
+!function(t,i){"object"==typeof exports&&"undefined"!=typeof module?i(exports):"function"==typeof define&&define.amd?define(["exports"],i):i((t="undefined"!=typeof globalThis?globalThis:t||self).d3=t.d3||{})}(this,(function(t){"use strict";const i=134217729;function e(t,i,e,n,s){let l,h,r,o,a=i[0],c=n[0],u=0,f=0;c>a==c>-a?(l=a,a=i[++u]):(l=c,c=n[++f]);let _=0;if(u<t&&f<e)for(c>a==c>-a?(h=a+l,r=l-(h-a),a=i[++u]):(h=c+l,r=l-(h-c),c=n[++f]),l=h,0!==r&&(s[_++]=r);u<t&&f<e;)c>a==c>-a?(h=l+a,o=h-l,r=l-(h-o)+(a-o),a=i[++u]):(h=l+c,o=h-l,r=l-(h-o)+(c-o),c=n[++f]),l=h,0!==r&&(s[_++]=r);for(;u<t;)h=l+a,o=h-l,r=l-(h-o)+(a-o),a=i[++u],l=h,0!==r&&(s[_++]=r);for(;f<e;)h=l+c,o=h-l,r=l-(h-o)+(c-o),c=n[++f],l=h,0!==r&&(s[_++]=r);return 0===l&&0!==_||(s[_++]=l),_}function n(t){return new Float64Array(t)}const s=n(4),l=n(8),h=n(12),r=n(16),o=n(4);function a(t,n,a,c,u,f){const _=(n-f)*(a-u),d=(t-u)*(c-f),g=_-d;if(0===_||0===d||_>0!=d>0)return g;const y=Math.abs(_+d);return Math.abs(g)>=33306690738754716e-32*y?g:-function(t,n,a,c,u,f,_){let d,g,y,m,x,p,w,v,b,T,M,A,k,$,P,S,I,z;const F=t-u,U=a-u,K=n-f,L=c-f;$=F*L,p=i*F,w=p-(p-F),v=F-w,p=i*L,b=p-(p-L),T=L-b,P=v*T-($-w*b-v*b-w*T),S=K*U,p=i*K,w=p-(p-K),v=K-w,p=i*U,b=p-(p-U),T=U-b,I=v*T-(S-w*b-v*b-w*T),M=P-I,x=P-M,s[0]=P-(M+x)+(x-I),A=$+M,x=A-$,k=$-(A-x)+(M-x),M=k-S,x=k-M,s[1]=k-(M+x)+(x-S),z=A+M,x=z-A,s[2]=A-(z-x)+(M-x),s[3]=z;let j=function(t,i){let e=i[0];for(let n=1;n<t;n++)e+=i[n];return e}(4,s),H=22204460492503146e-32*_;if(j>=H||-j>=H)return j;if(x=t-F,d=t-(F+x)+(x-u),x=a-U,y=a-(U+x)+(x-u),x=n-K,g=n-(K+x)+(x-f),x=c-L,m=c-(L+x)+(x-f),0===d&&0===g&&0===y&&0===m)return j;if(H=11093356479670487e-47*_+33306690738754706e-32*Math.abs(j),j+=F*m+L*d-(K*y+U*g),j>=H||-j>=H)return j;$=d*L,p=i*d,w=p-(p-d),v=d-w,p=i*L,b=p-(p-L),T=L-b,P=v*T-($-w*b-v*b-w*T),S=g*U,p=i*g,w=p-(p-g),v=g-w,p=i*U,b=p-(p-U),T=U-b,I=v*T-(S-w*b-v*b-w*T),M=P-I,x=P-M,o[0]=P-(M+x)+(x-I),A=$+M,x=A-$,k=$-(A-x)+(M-x),M=k-S,x=k-M,o[1]=k-(M+x)+(x-S),z=A+M,x=z-A,o[2]=A-(z-x)+(M-x),o[3]=z;const E=e(4,s,4,o,l);$=F*m,p=i*F,w=p-(p-F),v=F-w,p=i*m,b=p-(p-m),T=m-b,P=v*T-($-w*b-v*b-w*T),S=K*y,p=i*K,w=p-(p-K),v=K-w,p=i*y,b=p-(p-y),T=y-b,I=v*T-(S-w*b-v*b-w*T),M=P-I,x=P-M,o[0]=P-(M+x)+(x-I),A=$+M,x=A-$,k=$-(A-x)+(M-x),M=k-S,x=k-M,o[1]=k-(M+x)+(x-S),z=A+M,x=z-A,o[2]=A-(z-x)+(M-x),o[3]=z;const C=e(E,l,4,o,h);$=d*m,p=i*d,w=p-(p-d),v=d-w,p=i*m,b=p-(p-m),T=m-b,P=v*T-($-w*b-v*b-w*T),S=g*y,p=i*g,w=p-(p-g),v=g-w,p=i*y,b=p-(p-y),T=y-b,I=v*T-(S-w*b-v*b-w*T),M=P-I,x=P-M,o[0]=P-(M+x)+(x-I),A=$+M,x=A-$,k=$-(A-x)+(M-x),M=k-S,x=k-M,o[1]=k-(M+x)+(x-S),z=A+M,x=z-A,o[2]=A-(z-x)+(M-x),o[3]=z;const N=e(C,h,4,o,r);return r[N-1]}(t,n,a,c,u,f,y)}const c=Math.pow(2,-52),u=new Uint32Array(512);class f{static from(t,i=x,e=p){const n=t.length,s=new Float64Array(2*n);for(let l=0;l<n;l++){const n=t[l];s[2*l]=i(n),s[2*l+1]=e(n)}return new f(s)}constructor(t){const i=t.length>>1;if(i>0&&"number"!=typeof t[0])throw new Error("Expected coords to contain numbers.");this.coords=t;const e=Math.max(2*i-5,0);this._triangles=new Uint32Array(3*e),this._halfedges=new Int32Array(3*e),this._hashSize=Math.ceil(Math.sqrt(i)),this._hullPrev=new Uint32Array(i),this._hullNext=new Uint32Array(i),this._hullTri=new Uint32Array(i),this._hullHash=new Int32Array(this._hashSize).fill(-1),this._ids=new Uint32Array(i),this._dists=new Float64Array(i),this.update()}update(){const{coords:t,_hullPrev:i,_hullNext:e,_hullTri:n,_hullHash:s}=this,l=t.length>>1;let h=1/0,r=1/0,o=-1/0,u=-1/0;for(let i=0;i<l;i++){const e=t[2*i],n=t[2*i+1];e<h&&(h=e),n<r&&(r=n),e>o&&(o=e),n>u&&(u=n),this._ids[i]=i}const f=(h+o)/2,d=(r+u)/2;let m,x,p,w=1/0;for(let i=0;i<l;i++){const e=_(f,d,t[2*i],t[2*i+1]);e<w&&(m=i,w=e)}const v=t[2*m],b=t[2*m+1];w=1/0;for(let i=0;i<l;i++){if(i===m)continue;const e=_(v,b,t[2*i],t[2*i+1]);e<w&&e>0&&(x=i,w=e)}let T=t[2*x],M=t[2*x+1],A=1/0;for(let i=0;i<l;i++){if(i===m||i===x)continue;const e=g(v,b,T,M,t[2*i],t[2*i+1]);e<A&&(p=i,A=e)}let k=t[2*p],$=t[2*p+1];if(A===1/0){for(let i=0;i<l;i++)this._dists[i]=t[2*i]-t[0]||t[2*i+1]-t[1];y(this._ids,this._dists,0,l-1);const i=new Uint32Array(l);let e=0;for(let t=0,n=-1/0;t<l;t++){const s=this._ids[t];this._dists[s]>n&&(i[e++]=s,n=this._dists[s])}return this.hull=i.subarray(0,e),this.triangles=new Uint32Array(0),void(this.halfedges=new Uint32Array(0))}if(a(v,b,T,M,k,$)<0){const t=x,i=T,e=M;x=p,T=k,M=$,p=t,k=i,$=e}const P=function(t,i,e,n,s,l){const h=e-t,r=n-i,o=s-t,a=l-i,c=h*h+r*r,u=o*o+a*a,f=.5/(h*a-r*o);return{x:t+(a*c-r*u)*f,y:i+(h*u-o*c)*f}}(v,b,T,M,k,$);this._cx=P.x,this._cy=P.y;for(let i=0;i<l;i++)this._dists[i]=_(t[2*i],t[2*i+1],P.x,P.y);y(this._ids,this._dists,0,l-1),this._hullStart=m;let S=3;e[m]=i[p]=x,e[x]=i[m]=p,e[p]=i[x]=m,n[m]=0,n[x]=1,n[p]=2,s.fill(-1),s[this._hashKey(v,b)]=m,s[this._hashKey(T,M)]=x,s[this._hashKey(k,$)]=p,this.trianglesLen=0,this._addTriangle(m,x,p,-1,-1,-1);for(let l,h,r=0;r<this._ids.length;r++){const o=this._ids[r],u=t[2*o],f=t[2*o+1];if(r>0&&Math.abs(u-l)<=c&&Math.abs(f-h)<=c)continue;if(l=u,h=f,o===m||o===x||o===p)continue;let _=0;for(let t=0,i=this._hashKey(u,f);t<this._hashSize&&(_=s[(i+t)%this._hashSize],-1===_||_===e[_]);t++);_=i[_];let d,g=_;for(;d=e[g],a(u,f,t[2*g],t[2*g+1],t[2*d],t[2*d+1])>=0;)if(g=d,g===_){g=-1;break}if(-1===g)continue;let y=this._addTriangle(g,o,e[g],-1,-1,n[g]);n[o]=this._legalize(y+2),n[g]=y,S++;let w=e[g];for(;d=e[w],a(u,f,t[2*w],t[2*w+1],t[2*d],t[2*d+1])<0;)y=this._addTriangle(w,o,d,n[o],-1,n[w]),n[o]=this._legalize(y+2),e[w]=w,S--,w=d;if(g===_)for(;d=i[g],a(u,f,t[2*d],t[2*d+1],t[2*g],t[2*g+1])<0;)y=this._addTriangle(d,o,g,-1,n[g],n[d]),this._legalize(y+2),n[d]=y,e[g]=g,S--,g=d;this._hullStart=i[o]=g,e[g]=i[w]=o,e[o]=w,s[this._hashKey(u,f)]=o,s[this._hashKey(t[2*g],t[2*g+1])]=g}this.hull=new Uint32Array(S);for(let t=0,i=this._hullStart;t<S;t++)this.hull[t]=i,i=e[i];this.triangles=this._triangles.subarray(0,this.trianglesLen),this.halfedges=this._halfedges.subarray(0,this.trianglesLen)}_hashKey(t,i){return Math.floor(function(t,i){const e=t/(Math.abs(t)+Math.abs(i));return(i>0?3-e:1+e)/4}(t-this._cx,i-this._cy)*this._hashSize)%this._hashSize}_legalize(t){const{_triangles:i,_halfedges:e,coords:n}=this;let s=0,l=0;for(;;){const h=e[t],r=t-t%3;if(l=r+(t+2)%3,-1===h){if(0===s)break;t=u[--s];continue}const o=h-h%3,a=r+(t+1)%3,c=o+(h+2)%3,f=i[l],_=i[t],g=i[a],y=i[c];if(d(n[2*f],n[2*f+1],n[2*_],n[2*_+1],n[2*g],n[2*g+1],n[2*y],n[2*y+1])){i[t]=y,i[h]=f;const n=e[c];if(-1===n){let i=this._hullStart;do{if(this._hullTri[i]===c){this._hullTri[i]=t;break}i=this._hullPrev[i]}while(i!==this._hullStart)}this._link(t,n),this._link(h,e[l]),this._link(l,c);const r=o+(h+1)%3;s<u.length&&(u[s++]=r)}else{if(0===s)break;t=u[--s]}}return l}_link(t,i){this._halfedges[t]=i,-1!==i&&(this._halfedges[i]=t)}_addTriangle(t,i,e,n,s,l){const h=this.trianglesLen;return this._triangles[h]=t,this._triangles[h+1]=i,this._triangles[h+2]=e,this._link(h,n),this._link(h+1,s),this._link(h+2,l),this.trianglesLen+=3,h}}function _(t,i,e,n){const s=t-e,l=i-n;return s*s+l*l}function d(t,i,e,n,s,l,h,r){const o=t-h,a=i-r,c=e-h,u=n-r,f=s-h,_=l-r,d=c*c+u*u,g=f*f+_*_;return o*(u*g-d*_)-a*(c*g-d*f)+(o*o+a*a)*(c*_-u*f)<0}function g(t,i,e,n,s,l){const h=e-t,r=n-i,o=s-t,a=l-i,c=h*h+r*r,u=o*o+a*a,f=.5/(h*a-r*o),_=(a*c-r*u)*f,d=(h*u-o*c)*f;return _*_+d*d}function y(t,i,e,n){if(n-e<=20)for(let s=e+1;s<=n;s++){const n=t[s],l=i[n];let h=s-1;for(;h>=e&&i[t[h]]>l;)t[h+1]=t[h--];t[h+1]=n}else{let s=e+1,l=n;m(t,e+n>>1,s),i[t[e]]>i[t[n]]&&m(t,e,n),i[t[s]]>i[t[n]]&&m(t,s,n),i[t[e]]>i[t[s]]&&m(t,e,s);const h=t[s],r=i[h];for(;;){do{s++}while(i[t[s]]<r);do{l--}while(i[t[l]]>r);if(l<s)break;m(t,s,l)}t[e+1]=t[l],t[l]=h,n-s+1>=l-e?(y(t,i,s,n),y(t,i,e,l-1)):(y(t,i,e,l-1),y(t,i,s,n))}}function m(t,i,e){const n=t[i];t[i]=t[e],t[e]=n}function x(t){return t[0]}function p(t){return t[1]}const w=1e-6;class v{constructor(){this._x0=this._y0=this._x1=this._y1=null,this._=""}moveTo(t,i){this._+=`M${this._x0=this._x1=+t},${this._y0=this._y1=+i}`}closePath(){null!==this._x1&&(this._x1=this._x0,this._y1=this._y0,this._+="Z")}lineTo(t,i){this._+=`L${this._x1=+t},${this._y1=+i}`}arc(t,i,e){const n=(t=+t)+(e=+e),s=i=+i;if(e<0)throw new Error("negative radius");null===this._x1?this._+=`M${n},${s}`:(Math.abs(this._x1-n)>w||Math.abs(this._y1-s)>w)&&(this._+="L"+n+","+s),e&&(this._+=`A${e},${e},0,1,1,${t-e},${i}A${e},${e},0,1,1,${this._x1=n},${this._y1=s}`)}rect(t,i,e,n){this._+=`M${this._x0=this._x1=+t},${this._y0=this._y1=+i}h${+e}v${+n}h${-e}Z`}value(){return this._||null}}class b{constructor(){this._=[]}moveTo(t,i){this._.push([t,i])}closePath(){this._.push(this._[0].slice())}lineTo(t,i){this._.push([t,i])}value(){return this._.length?this._:null}}class T{constructor(t,[i,e,n,s]=[0,0,960,500]){if(!((n=+n)>=(i=+i)&&(s=+s)>=(e=+e)))throw new Error("invalid bounds");this.delaunay=t,this._circumcenters=new Float64Array(2*t.points.length),this.vectors=new Float64Array(2*t.points.length),this.xmax=n,this.xmin=i,this.ymax=s,this.ymin=e,this._init()}update(){return this.delaunay.update(),this._init(),this}_init(){const{delaunay:{points:t,hull:i,triangles:e},vectors:n}=this;let s,l;const h=this.circumcenters=this._circumcenters.subarray(0,e.length/3*2);for(let n,r,o=0,a=0,c=e.length;o<c;o+=3,a+=2){const c=2*e[o],u=2*e[o+1],f=2*e[o+2],_=t[c],d=t[c+1],g=t[u],y=t[u+1],m=t[f],x=t[f+1],p=g-_,w=y-d,v=m-_,b=x-d,T=2*(p*b-w*v);if(Math.abs(T)<1e-9){if(void 0===s){s=l=0;for(const e of i)s+=t[2*e],l+=t[2*e+1];s/=i.length,l/=i.length}const e=1e9*Math.sign((s-_)*b-(l-d)*v);n=(_+m)/2-e*b,r=(d+x)/2+e*v}else{const t=1/T,i=p*p+w*w,e=v*v+b*b;n=_+(b*i-w*e)*t,r=d+(p*e-v*i)*t}h[a]=n,h[a+1]=r}let r,o,a,c=i[i.length-1],u=4*c,f=t[2*c],_=t[2*c+1];n.fill(0);for(let e=0;e<i.length;++e)c=i[e],r=u,o=f,a=_,u=4*c,f=t[2*c],_=t[2*c+1],n[r+2]=n[u]=a-_,n[r+3]=n[u+1]=f-o}render(t){const i=null==t?t=new v:void 0,{delaunay:{halfedges:e,inedges:n,hull:s},circumcenters:l,vectors:h}=this;if(s.length<=1)return null;for(let i=0,n=e.length;i<n;++i){const n=e[i];if(n<i)continue;const s=2*Math.floor(i/3),h=2*Math.floor(n/3),r=l[s],o=l[s+1],a=l[h],c=l[h+1];this._renderSegment(r,o,a,c,t)}let r,o=s[s.length-1];for(let i=0;i<s.length;++i){r=o,o=s[i];const e=2*Math.floor(n[o]/3),a=l[e],c=l[e+1],u=4*r,f=this._project(a,c,h[u+2],h[u+3]);f&&this._renderSegment(a,c,f[0],f[1],t)}return i&&i.value()}renderBounds(t){const i=null==t?t=new v:void 0;return t.rect(this.xmin,this.ymin,this.xmax-this.xmin,this.ymax-this.ymin),i&&i.value()}renderCell(t,i){const e=null==i?i=new v:void 0,n=this._clip(t);if(null===n||!n.length)return;i.moveTo(n[0],n[1]);let s=n.length;for(;n[0]===n[s-2]&&n[1]===n[s-1]&&s>1;)s-=2;for(let t=2;t<s;t+=2)n[t]===n[t-2]&&n[t+1]===n[t-1]||i.lineTo(n[t],n[t+1]);return i.closePath(),e&&e.value()}*cellPolygons(){const{delaunay:{points:t}}=this;for(let i=0,e=t.length/2;i<e;++i){const t=this.cellPolygon(i);t&&(t.index=i,yield t)}}cellPolygon(t){const i=new b;return this.renderCell(t,i),i.value()}_renderSegment(t,i,e,n,s){let l;const h=this._regioncode(t,i),r=this._regioncode(e,n);0===h&&0===r?(s.moveTo(t,i),s.lineTo(e,n)):(l=this._clipSegment(t,i,e,n,h,r))&&(s.moveTo(l[0],l[1]),s.lineTo(l[2],l[3]))}contains(t,i,e){return(i=+i)==i&&(e=+e)==e&&this.delaunay._step(t,i,e)===t}*neighbors(t){const i=this._clip(t);if(i)for(const e of this.delaunay.neighbors(t)){const t=this._clip(e);if(t)t:for(let n=0,s=i.length;n<s;n+=2)for(let l=0,h=t.length;l<h;l+=2)if(i[n]===t[l]&&i[n+1]===t[l+1]&&i[(n+2)%s]===t[(l+h-2)%h]&&i[(n+3)%s]===t[(l+h-1)%h]){yield e;break t}}}_cell(t){const{circumcenters:i,delaunay:{inedges:e,halfedges:n,triangles:s}}=this,l=e[t];if(-1===l)return null;const h=[];let r=l;do{const e=Math.floor(r/3);if(h.push(i[2*e],i[2*e+1]),r=r%3==2?r-2:r+1,s[r]!==t)break;r=n[r]}while(r!==l&&-1!==r);return h}_clip(t){if(0===t&&1===this.delaunay.hull.length)return[this.xmax,this.ymin,this.xmax,this.ymax,this.xmin,this.ymax,this.xmin,this.ymin];const i=this._cell(t);if(null===i)return null;const{vectors:e}=this,n=4*t;return this._simplify(e[n]||e[n+1]?this._clipInfinite(t,i,e[n],e[n+1],e[n+2],e[n+3]):this._clipFinite(t,i))}_clipFinite(t,i){const e=i.length;let n,s,l,h,r=null,o=i[e-2],a=i[e-1],c=this._regioncode(o,a),u=0;for(let f=0;f<e;f+=2)if(n=o,s=a,o=i[f],a=i[f+1],l=c,c=this._regioncode(o,a),0===l&&0===c)h=u,u=0,r?r.push(o,a):r=[o,a];else{let i,e,f,_,d;if(0===l){if(null===(i=this._clipSegment(n,s,o,a,l,c)))continue;[e,f,_,d]=i}else{if(null===(i=this._clipSegment(o,a,n,s,c,l)))continue;[_,d,e,f]=i,h=u,u=this._edgecode(e,f),h&&u&&this._edge(t,h,u,r,r.length),r?r.push(e,f):r=[e,f]}h=u,u=this._edgecode(_,d),h&&u&&this._edge(t,h,u,r,r.length),r?r.push(_,d):r=[_,d]}if(r)h=u,u=this._edgecode(r[0],r[1]),h&&u&&this._edge(t,h,u,r,r.length);else if(this.contains(t,(this.xmin+this.xmax)/2,(this.ymin+this.ymax)/2))return[this.xmax,this.ymin,this.xmax,this.ymax,this.xmin,this.ymax,this.xmin,this.ymin];return r}_clipSegment(t,i,e,n,s,l){const h=s<l;for(h&&([t,i,e,n,s,l]=[e,n,t,i,l,s]);;){if(0===s&&0===l)return h?[e,n,t,i]:[t,i,e,n];if(s&l)return null;let r,o,a=s||l;8&a?(r=t+(e-t)*(this.ymax-i)/(n-i),o=this.ymax):4&a?(r=t+(e-t)*(this.ymin-i)/(n-i),o=this.ymin):2&a?(o=i+(n-i)*(this.xmax-t)/(e-t),r=this.xmax):(o=i+(n-i)*(this.xmin-t)/(e-t),r=this.xmin),s?(t=r,i=o,s=this._regioncode(t,i)):(e=r,n=o,l=this._regioncode(e,n))}}_clipInfinite(t,i,e,n,s,l){let h,r=Array.from(i);if((h=this._project(r[0],r[1],e,n))&&r.unshift(h[0],h[1]),(h=this._project(r[r.length-2],r[r.length-1],s,l))&&r.push(h[0],h[1]),r=this._clipFinite(t,r))for(let i,e=0,n=r.length,s=this._edgecode(r[n-2],r[n-1]);e<n;e+=2)i=s,s=this._edgecode(r[e],r[e+1]),i&&s&&(e=this._edge(t,i,s,r,e),n=r.length);else this.contains(t,(this.xmin+this.xmax)/2,(this.ymin+this.ymax)/2)&&(r=[this.xmin,this.ymin,this.xmax,this.ymin,this.xmax,this.ymax,this.xmin,this.ymax]);return r}_edge(t,i,e,n,s){for(;i!==e;){let e,l;switch(i){case 5:i=4;continue;case 4:i=6,e=this.xmax,l=this.ymin;break;case 6:i=2;continue;case 2:i=10,e=this.xmax,l=this.ymax;break;case 10:i=8;continue;case 8:i=9,e=this.xmin,l=this.ymax;break;case 9:i=1;continue;case 1:i=5,e=this.xmin,l=this.ymin}n[s]===e&&n[s+1]===l||!this.contains(t,e,l)||(n.splice(s,0,e,l),s+=2)}return s}_project(t,i,e,n){let s,l,h,r=1/0;if(n<0){if(i<=this.ymin)return null;(s=(this.ymin-i)/n)<r&&(h=this.ymin,l=t+(r=s)*e)}else if(n>0){if(i>=this.ymax)return null;(s=(this.ymax-i)/n)<r&&(h=this.ymax,l=t+(r=s)*e)}if(e>0){if(t>=this.xmax)return null;(s=(this.xmax-t)/e)<r&&(l=this.xmax,h=i+(r=s)*n)}else if(e<0){if(t<=this.xmin)return null;(s=(this.xmin-t)/e)<r&&(l=this.xmin,h=i+(r=s)*n)}return[l,h]}_edgecode(t,i){return(t===this.xmin?1:t===this.xmax?2:0)|(i===this.ymin?4:i===this.ymax?8:0)}_regioncode(t,i){return(t<this.xmin?1:t>this.xmax?2:0)|(i<this.ymin?4:i>this.ymax?8:0)}_simplify(t){if(t&&t.length>4){for(let i=0;i<t.length;i+=2){const e=(i+2)%t.length,n=(i+4)%t.length;(t[i]===t[e]&&t[e]===t[n]||t[i+1]===t[e+1]&&t[e+1]===t[n+1])&&(t.splice(e,2),i-=2)}t.length||(t=null)}return t}}const M=2*Math.PI,A=Math.pow;function k(t){return t[0]}function $(t){return t[1]}function P(t,i,e){return[t+Math.sin(t+i)*e,i+Math.cos(t-i)*e]}class S{static from(t,i=k,e=$,n){return new S("length"in t?function(t,i,e,n){const s=t.length,l=new Float64Array(2*s);for(let h=0;h<s;++h){const s=t[h];l[2*h]=i.call(n,s,h,t),l[2*h+1]=e.call(n,s,h,t)}return l}(t,i,e,n):Float64Array.from(function*(t,i,e,n){let s=0;for(const l of t)yield i.call(n,l,s,t),yield e.call(n,l,s,t),++s}(t,i,e,n)))}constructor(t){this._delaunator=new f(t),this.inedges=new Int32Array(t.length/2),this._hullIndex=new Int32Array(t.length/2),this.points=this._delaunator.coords,this._init()}update(){return this._delaunator.update(),this._init(),this}_init(){const t=this._delaunator,i=this.points;if(t.hull&&t.hull.length>2&&function(t){const{triangles:i,coords:e}=t;for(let t=0;t<i.length;t+=3){const n=2*i[t],s=2*i[t+1],l=2*i[t+2];if((e[l]-e[n])*(e[s+1]-e[n+1])-(e[s]-e[n])*(e[l+1]-e[n+1])>1e-10)return!1}return!0}(t)){this.collinear=Int32Array.from({length:i.length/2},((t,i)=>i)).sort(((t,e)=>i[2*t]-i[2*e]||i[2*t+1]-i[2*e+1]));const t=this.collinear[0],e=this.collinear[this.collinear.length-1],n=[i[2*t],i[2*t+1],i[2*e],i[2*e+1]],s=1e-8*Math.hypot(n[3]-n[1],n[2]-n[0]);for(let t=0,e=i.length/2;t<e;++t){const e=P(i[2*t],i[2*t+1],s);i[2*t]=e[0],i[2*t+1]=e[1]}this._delaunator=new f(i)}else delete this.collinear;const e=this.halfedges=this._delaunator.halfedges,n=this.hull=this._delaunator.hull,s=this.triangles=this._delaunator.triangles,l=this.inedges.fill(-1),h=this._hullIndex.fill(-1);for(let t=0,i=e.length;t<i;++t){const i=s[t%3==2?t-2:t+1];-1!==e[t]&&-1!==l[i]||(l[i]=t)}for(let t=0,i=n.length;t<i;++t)h[n[t]]=t;n.length<=2&&n.length>0&&(this.triangles=new Int32Array(3).fill(-1),this.halfedges=new Int32Array(3).fill(-1),this.triangles[0]=n[0],l[n[0]]=1,2===n.length&&(l[n[1]]=0,this.triangles[1]=n[1],this.triangles[2]=n[1]))}voronoi(t){return new T(this,t)}*neighbors(t){const{inedges:i,hull:e,_hullIndex:n,halfedges:s,triangles:l,collinear:h}=this;if(h){const i=h.indexOf(t);return i>0&&(yield h[i-1]),void(i<h.length-1&&(yield h[i+1]))}const r=i[t];if(-1===r)return;let o=r,a=-1;do{if(yield a=l[o],o=o%3==2?o-2:o+1,l[o]!==t)return;if(o=s[o],-1===o){const i=e[(n[t]+1)%e.length];return void(i!==a&&(yield i))}}while(o!==r)}find(t,i,e=0){if((t=+t)!=t||(i=+i)!=i)return-1;const n=e;let s;for(;(s=this._step(e,t,i))>=0&&s!==e&&s!==n;)e=s;return s}_step(t,i,e){const{inedges:n,hull:s,_hullIndex:l,halfedges:h,triangles:r,points:o}=this;if(-1===n[t]||!o.length)return(t+1)%(o.length>>1);let a=t,c=A(i-o[2*t],2)+A(e-o[2*t+1],2);const u=n[t];let f=u;do{let n=r[f];const u=A(i-o[2*n],2)+A(e-o[2*n+1],2);if(u<c&&(c=u,a=n),f=f%3==2?f-2:f+1,r[f]!==t)break;if(f=h[f],-1===f){if(f=s[(l[t]+1)%s.length],f!==n&&A(i-o[2*f],2)+A(e-o[2*f+1],2)<c)return f;break}}while(f!==u);return a}render(t){const i=null==t?t=new v:void 0,{points:e,halfedges:n,triangles:s}=this;for(let i=0,l=n.length;i<l;++i){const l=n[i];if(l<i)continue;const h=2*s[i],r=2*s[l];t.moveTo(e[h],e[h+1]),t.lineTo(e[r],e[r+1])}return this.renderHull(t),i&&i.value()}renderPoints(t,i){void 0!==i||t&&"function"==typeof t.moveTo||(i=t,t=null),i=null==i?2:+i;const e=null==t?t=new v:void 0,{points:n}=this;for(let e=0,s=n.length;e<s;e+=2){const s=n[e],l=n[e+1];t.moveTo(s+i,l),t.arc(s,l,i,0,M)}return e&&e.value()}renderHull(t){const i=null==t?t=new v:void 0,{hull:e,points:n}=this,s=2*e[0],l=e.length;t.moveTo(n[s],n[s+1]);for(let i=1;i<l;++i){const s=2*e[i];t.lineTo(n[s],n[s+1])}return t.closePath(),i&&i.value()}hullPolygon(){const t=new b;return this.renderHull(t),t.value()}renderTriangle(t,i){const e=null==i?i=new v:void 0,{points:n,triangles:s}=this,l=2*s[t*=3],h=2*s[t+1],r=2*s[t+2];return i.moveTo(n[l],n[l+1]),i.lineTo(n[h],n[h+1]),i.lineTo(n[r],n[r+1]),i.closePath(),e&&e.value()}*trianglePolygons(){const{triangles:t}=this;for(let i=0,e=t.length/3;i<e;++i)yield this.trianglePolygon(i)}trianglePolygon(t){const i=new b;return this.renderTriangle(t,i),i.value()}}t.Delaunay=S,t.Voronoi=T,Object.defineProperty(t,"__esModule",{value:!0})}));
+</script>
+<script>const Stipple = (() => {
+  let DelaunayCls = null;
+  const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
+
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // Separable [1 2 1]/4 blur with clamped borders.
+  function blur3(src, W, H) {
+    const tmp = new Float32Array(W * H);
+    const out = new Float32Array(W * H);
+    for (let y = 0; y < H; y++) {
+      const r = y * W;
+      for (let x = 0; x < W; x++) {
+        const a = src[r + (x > 0 ? x - 1 : 0)], b = src[r + x], c = src[r + (x < W - 1 ? x + 1 : x)];
+        tmp[r + x] = (a + 2 * b + c) * 0.25;
+      }
+    }
+    for (let y = 0; y < H; y++) {
+      const y0 = (y > 0 ? y - 1 : 0) * W, y1 = y * W, y2 = (y < H - 1 ? y + 1 : y) * W;
+      for (let x = 0; x < W; x++) out[y1 + x] = (tmp[y0 + x] + 2 * tmp[y1 + x] + tmp[y2 + x]) * 0.25;
+    }
+    return out;
+  }
+
+  // Sobel gradient magnitude of a lightly smoothed image, scaled so the 95th percentile maps to 1.
+  function edgeMap(gray, W, H) {
+    const g = blur3(blur3(gray, W, H), W, H);
+    const mag = new Float32Array(W * H);
+    for (let y = 1; y < H - 1; y++) {
+      for (let x = 1; x < W - 1; x++) {
+        const i = y * W + x;
+        const gx = -g[i - W - 1] - 2 * g[i - 1] - g[i + W - 1] + g[i - W + 1] + 2 * g[i + 1] + g[i + W + 1];
+        const gy = -g[i - W - 1] - 2 * g[i - W] - g[i - W + 1] + g[i + W - 1] + 2 * g[i + W] + g[i + W + 1];
+        mag[i] = Math.sqrt(gx * gx + gy * gy);
+      }
+    }
+    const sorted = Float32Array.from(mag).sort();
+    const p95 = sorted[Math.floor(sorted.length * 0.95)];
+    const out = new Float32Array(W * H);
+    if (p95 > 1e-6) for (let i = 0; i < out.length; i++) out[i] = Math.min(1, mag[i] / p95);
+    return out;
+  }
+
+  // Wide blur used as the "base" layer for detail boost (unsharp mask). Radius scales with raster size.
+  function detailBlur(gray, W, H) {
+    let g = gray;
+    const passes = Math.max(2, Math.round(Math.max(W, H) / 110));
+    for (let k = 0; k < passes; k++) g = blur3(g, W, H);
+    return g;
+  }
+
+  // o: {auto, invert, bright (-0.5..0.5), contrast (-0.8..0.8), edge (0..1.4), detail (0..1)}
+  // Returns per-pixel weight rho (high = more dots) and its cumulative distribution for sampling.
+  function buildDensity(gray0, blur, edge, W, H, o) {
+    const n = W * H;
+    const kd = (o.detail || 0) * 2.5;
+    const gray = new Float32Array(n);
+    for (let i = 0; i < n; i++) gray[i] = gray0[i] + kd * (gray0[i] - blur[i]);
+    // Optional subject mask (1 = subject, 0 = background): feathered, resampled to this raster, used to thin the background.
+    let mk = null;
+    if (o.mask && o.mask.data) {
+      let md = o.mask.data;
+      for (let q = 0; q < (o.feather | 0); q++) md = blur3(md, o.mask.w, o.mask.h);
+      const mw = o.mask.w, mh = o.mask.h;
+      mk = new Float32Array(n);
+      for (let y = 0; y < H; y++) {
+        const fy = Math.min(mh - 1, Math.max(0, ((y + 0.5) * mh) / H - 0.5)), y0 = fy | 0, y1 = Math.min(mh - 1, y0 + 1), ty = fy - y0;
+        for (let x = 0; x < W; x++) {
+          const fx = Math.min(mw - 1, Math.max(0, ((x + 0.5) * mw) / W - 0.5)), x0 = fx | 0, x1 = Math.min(mw - 1, x0 + 1), tx = fx - x0;
+          const top = md[y0 * mw + x0] * (1 - tx) + md[y0 * mw + x1] * tx, bot = md[y1 * mw + x0] * (1 - tx) + md[y1 * mw + x1] * tx;
+          mk[y * W + x] = top * (1 - ty) + bot * ty;
+        }
+      }
+    }
+    const bgLevel = o.bg == null ? 1 : o.bg;
+    let lo = 0, hi = 1;
+    if (o.auto) {
+      const hist = new Uint32Array(256);
+      let cnt = 0; // with a mask, levels are measured on the subject only so a dark backdrop does not skew them
+      for (let i = 0; i < n; i++) if (!mk || mk[i] > 0.5) { hist[Math.min(255, (clamp01(gray[i]) * 255) | 0)]++; cnt++; }
+      if (cnt < n * 0.002) { hist.fill(0); cnt = n; for (let i = 0; i < n; i++) hist[Math.min(255, (clamp01(gray[i]) * 255) | 0)]++; }
+      let acc = 0, a = 0, b = 255;
+      for (let k = 0; k < 256; k++) { acc += hist[k]; if (acc >= cnt * 0.01) { a = k; break; } }
+      acc = 0;
+      for (let k = 255; k >= 0; k--) { acc += hist[k]; if (acc >= cnt * 0.01) { b = k; break; } }
+      lo = a / 255; hi = b / 255;
+      if (hi - lo < 0.05) { lo = 0; hi = 1; }
+    }
+    const k = Math.tan((o.contrast + 1) * Math.PI / 4);
+    const rho = new Float32Array(n);
+    const cdf = new Float64Array(n);
+    let total = 0;
+    for (let i = 0; i < n; i++) {
+      let l = clamp01((gray[i] - lo) / (hi - lo));
+      l = clamp01((l - 0.5) * k + 0.5 + o.bright);
+      const f = mk ? bgLevel + (1 - bgLevel) * mk[i] : 1;
+      const d = ((o.invert ? l : 1 - l) + o.edge * edge[i]) * f;
+      rho[i] = d;
+      total += d;
+      cdf[i] = total;
+    }
+    if (total <= 1e-9) { // blank image: avoid a degenerate distribution
+      total = 0;
+      for (let i = 0; i < n; i++) { rho[i] = 1e-3; total += 1e-3; cdf[i] = total; }
+    }
+    return { rho, cdf, total };
+  }
+
+  function samplePoint(cdf, total, W, rng, out, j) {
+    const r = rng() * total;
+    let lo = 0, hi = cdf.length - 1;
+    while (lo < hi) { const m = (lo + hi) >> 1; if (cdf[m] >= r) hi = m; else lo = m + 1; }
+    out[j] = (lo % W) + rng();
+    out[j + 1] = ((lo / W) | 0) + rng();
+  }
+
+  function initPoints(N, dens, W, rng) {
+    const pts = new Float64Array(N * 2);
+    for (let i = 0; i < N; i++) samplePoint(dens.cdf, dens.total, W, rng, pts, i * 2);
+    return pts;
+  }
+
+  // One step of weighted Lloyd relaxation: every dot moves toward the density-weighted centroid of its Voronoi cell.
+  function relaxStep(pts, N, dens, W, H, rng, t) {
+    const del = new DelaunayCls(pts);
+    const rho = dens.rho;
+    const sw = new Float64Array(N), sx = new Float64Array(N), sy = new Float64Array(N);
+    let idx = 0;
+    for (let y = 0; y < H; y++) {
+      const row = y * W, py = y + 0.5;
+      for (let x = 0; x < W; x++) {
+        const w = rho[row + x];
+        if (w < 1e-4) continue;
+        idx = del.find(x + 0.5, py, idx);
+        sw[idx] += w; sx[idx] += w * (x + 0.5); sy[idx] += w * py;
+      }
+    }
+    const wob = (1 - t) * (1 - t);
+    for (let i = 0; i < N; i++) {
+      const j = i * 2;
+      if (sw[i] > 1e-9) {
+        const cx = sx[i] / sw[i], cy = sy[i] / sw[i];
+        let nx = pts[j] + (cx - pts[j]) * 1.8 + (rng() - 0.5) * wob;
+        let ny = pts[j + 1] + (cy - pts[j + 1]) * 1.8 + (rng() - 0.5) * wob;
+        pts[j] = nx < 0 ? 0 : nx > W ? W : nx;
+        pts[j + 1] = ny < 0 ? 0 : ny > H ? H : ny;
+      } else {
+        samplePoint(dens.cdf, dens.total, W, rng, pts, j); // empty cell: relocate to where ink is needed
+      }
+    }
+  }
+
+  function toneAt(pts, N, dens, W, H) {
+    const tone = new Float32Array(N);
+    for (let i = 0; i < N; i++) {
+      const x = Math.min(W - 1, Math.max(0, pts[i * 2] | 0));
+      const y = Math.min(H - 1, Math.max(0, pts[i * 2 + 1] | 0));
+      tone[i] = clamp01(dens.rho[y * W + x]);
+    }
+    return tone;
+  }
+
+  // Local dot spacing (in raster px) implied by the density at each dot: 1 / sqrt(dots per px^2).
+  function spacingAt(pts, N, dens, W, H) {
+    const sp = new Float32Array(N);
+    const cap = 0.05 * Math.max(W, H);
+    for (let i = 0; i < N; i++) {
+      const x = Math.min(W - 1, Math.max(0, pts[i * 2] | 0));
+      const y = Math.min(H - 1, Math.max(0, pts[i * 2 + 1] | 0));
+      const lambda = (N * Math.max(dens.rho[y * W + x], 1e-6)) / dens.total;
+      sp[i] = Math.min(cap, 1 / Math.sqrt(lambda));
+    }
+    return sp;
+  }
+
+  // Fixed gaussian offsets (unit sigma), one pair per dot, so randomness can be rescaled without re-solving.
+  function gaussOffsets(N, rng) {
+    const off = new Float32Array(N * 2);
+    for (let i = 0; i < N; i++) {
+      const r = Math.sqrt(-2 * Math.log(Math.max(rng(), 1e-12))), a = 6.283185307 * rng();
+      off[i * 2] = r * Math.cos(a); off[i * 2 + 1] = r * Math.sin(a);
+    }
+    return off;
+  }
+
+  return { mulberry32, blur3, edgeMap, detailBlur, buildDensity, initPoints, relaxStep, toneAt, spacingAt, gaussOffsets, setDelaunay: (c) => { DelaunayCls = c; } };
+})();
+</script>
+<script>(() => {
+  const $ = (id) => document.getElementById(id);
+  const PAPERS = { A6: [105, 148], A5: [148, 210], A4: [210, 297], A3: [297, 420], Letter: [215.9, 279.4], Square: [200, 200] };
+  const PRESETS = [
+    { name: 'Carbon black on white', ink: '#15171A', paper: '#FBFBF8', invert: false },
+    { name: 'Ballpoint blue on white', ink: '#1F3FBF', paper: '#FBFBF8', invert: false },
+    { name: 'Madder red on kraft', ink: '#8E1B1B', paper: '#D8C3A0', invert: false },
+    { name: 'Sepia on parchment', ink: '#4A2C17', paper: '#EAD9B8', invert: false },
+    { name: 'Chalk on slate', ink: '#F3F3EE', paper: '#17191C', invert: true },
+    { name: 'Cyanotype', ink: '#E8F0FF', paper: '#1D3FA8', invert: true },
+  ];
+  const st = {
+    W: 0, H: 0, gray: null, blur: null, edge: null, key: 0, sentKey: 0, src: null, side: 0,
+    N: 0, pts: null, tone: null, sp: null, off: null, nextOff: null, dense: 0,
+    token: 0, timer: 0, solving: false, seed: 7, zoom: 1, sizeKey: '', iters: 0, t0: 0, elapsed: 0, compare: false, ptsW: 0, ptsH: 0,
+    mw: 0, mh: 0, mask: null, maskOn: false, maskPrev: null, tool: null, painting: false, last: null,
+    edges: { top: true, left: true, right: true, bottom: false },
+  };
+  const RAD = { d: 0.2, v: 0 }; // cached dot-size controls, refreshed by labels()
+  const cv = $('cv');
+  let dl = null;
+  const DL_NOTE = $('dlnote').textContent;
+  Stipple.setDelaunay(d3.Delaunay);
+  const tick = () => new Promise((r) => setTimeout(r, 0));
+
+  const num = (id) => parseFloat($(id).value);
+  const dotCount = () => {
+    const n = 500 * Math.pow(1000, num('count') / 100); // 500 .. 500,000 on a log scale
+    const step = n >= 100000 ? 5000 : n >= 20000 ? 1000 : n >= 5000 ? 250 : 50;
+    return Math.round(n / step) * step;
+  };
+  // Working raster grows with dot count so the density map can resolve fine patterns (benchmarked: 1280 px is too coarse past ~300k dots).
+  const rasterSide = (N) => Math.min(2048, Math.max(512, Math.ceil((Math.sqrt(N) * 4) / 64) * 64));
+  const fmt = (v) => (Math.round(v * 10) / 10).toString();
+  const signed = (v) => (v > 0 ? '+' + v : String(v));
+
+  function labels() {
+    RAD.d = num('dia') / 2; RAD.v = num('var') / 100;
+    $('countOut').textContent = dotCount().toLocaleString();
+    $('diaOut').textContent = num('dia').toFixed(2) + ' mm';
+    $('varOut').textContent = num('var') + '%';
+    $('jitOut').textContent = num('jit') + '%';
+    $('brightOut').textContent = signed(num('bright'));
+    $('contrastOut').textContent = signed(num('contrast'));
+    $('detailOut').textContent = num('detail') + '%';
+    $('edgeOut').textContent = num('edge') + '%';
+    $('marginOut').textContent = num('margin') + ' mm';
+    $('passesOut').textContent = String(num('passes'));
+    $('sensOut').textContent = String(num('sens'));
+    $('bgdOut').textContent = num('bgd') + '%';
+    $('softOut').textContent = num('soft') + '%';
+    $('bsizeOut').textContent = num('bsize') + '%';
+  }
+
+  /* ---------- source image ---------- */
+  function makeSample() {
+    const w = 720, h = 900, c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const x = c.getContext('2d');
+    const bg = x.createLinearGradient(0, 0, 0, h);
+    bg.addColorStop(0, '#f4f4f2'); bg.addColorStop(0.62, '#cdcdca');
+    bg.addColorStop(0.62, '#9b9b98'); bg.addColorStop(1, '#585856');
+    x.fillStyle = bg; x.fillRect(0, 0, w, h);
+    x.strokeStyle = '#2a2a2a'; x.lineWidth = 12; x.strokeRect(70, 80, 170, 260);
+    x.lineWidth = 7; x.beginPath(); x.moveTo(155, 80); x.lineTo(155, 340); x.moveTo(70, 210); x.lineTo(240, 210); x.stroke();
+    const shadow = (cx, cy, rx, ry) => {
+      x.save(); x.translate(cx, cy); x.scale(1, ry / rx);
+      const g = x.createRadialGradient(0, 0, 0, 0, 0, rx);
+      g.addColorStop(0, 'rgba(0,0,0,0.75)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      x.fillStyle = g; x.fillRect(-rx, -rx, rx * 2, rx * 2); x.restore();
+    };
+    const ball = (cx, cy, r, light) => {
+      const g = x.createRadialGradient(cx - r * 0.38, cy - r * 0.42, r * 0.05, cx, cy, r);
+      g.addColorStop(0, light); g.addColorStop(0.35, '#c4c4c2'); g.addColorStop(0.8, '#444'); g.addColorStop(1, '#161616');
+      x.fillStyle = g; x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fill();
+    };
+    shadow(390, 706, 270, 270 * 0.26);
+    shadow(600, 742, 120, 120 * 0.26);
+    ball(330, 470, 230, '#ffffff');
+    ball(590, 650, 95, '#f2f2f2');
+    return c;
+  }
+
+  // Keep a decoded copy (up to 2800 px) so the working raster can be rebuilt at other resolutions.
+  function keepSource(src, sw, sh) {
+    const s = Math.min(1, 2800 / Math.max(sw, sh));
+    const c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(sw * s)); c.height = Math.max(1, Math.round(sh * s));
+    const x = c.getContext('2d');
+    x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height);
+    x.imageSmoothingQuality = 'high';
+    x.drawImage(src, 0, 0, c.width, c.height);
+    st.src = c; st.side = 0;
+    // The subject mask lives at a fixed 512 px resolution, independent of the solver's working raster.
+    const ms = 512 / Math.max(c.width, c.height);
+    st.mw = Math.max(8, Math.round(c.width * ms)); st.mh = Math.max(8, Math.round(c.height * ms));
+    st.mask = null; st.maskOn = false; st.maskPrev = null;
+    resetMaskUi();
+  }
+
+  // Rasterise to a grayscale working map. The blur and edge maps are built by the solver (in the worker, or lazily here as a fallback).
+  function prepare(side) {
+    const sw = st.src.width, sh = st.src.height, s = side / Math.max(sw, sh);
+    const W = Math.max(8, Math.round(sw * s)), H = Math.max(8, Math.round(sh * s));
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const x = c.getContext('2d', { willReadFrequently: true });
+    x.fillStyle = '#fff'; x.fillRect(0, 0, W, H);
+    x.imageSmoothingQuality = 'high';
+    x.drawImage(st.src, 0, 0, W, H);
+    const d = x.getImageData(0, 0, W, H).data;
+    const gray = new Float32Array(W * H);
+    for (let i = 0; i < gray.length; i++) gray[i] = (0.2126 * d[i * 4] + 0.7152 * d[i * 4 + 1] + 0.0722 * d[i * 4 + 2]) / 255;
+    st.W = W; st.H = H; st.gray = gray; st.blur = null; st.edge = null; st.side = side; st.key++;
+  }
+  function mainMaps() {
+    if (!st.blur) { st.blur = Stipple.detailBlur(st.gray, st.W, st.H); st.edge = Stipple.edgeMap(st.gray, st.W, st.H); }
+  }
+
+  function markFresh() {
+    const s = document.querySelector('.sheet');
+    s.classList.remove('fresh'); void s.offsetWidth; s.classList.add('fresh');
+  }
+
+  function useSample() {
+    const c = makeSample();
+    keepSource(c, c.width, c.height);
+    $('fname').textContent = 'or drop one here. Using the sample.';
+    markFresh();
+    solve();
+  }
+
+  function loadFile(file) {
+    if (!file || !file.type || file.type.indexOf('image/') !== 0) { $('fname').textContent = 'That file is not an image.'; return; }
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const w = img.naturalWidth || 800, h = img.naturalHeight || 800;
+      keepSource(img, w, h);
+      $('fname').textContent = (file.name || 'Pasted image') + ' · ' + w + ' × ' + h + ' px';
+      URL.revokeObjectURL(url);
+      markFresh();
+      solve();
+    };
+    img.onerror = () => { $('fname').textContent = 'Could not read that image. Try a JPG or PNG.'; URL.revokeObjectURL(url); };
+    img.src = url;
+  }
+
+  /* ---------- solver worker ---------- */
+  // This function's source runs inside the worker, after the inlined d3-delaunay and engine sources.
+  function workerMain() {
+    Stipple.setDelaunay(d3.Delaunay);
+    let current = 0, cache = null;
+    const tick = () => new Promise((r) => setTimeout(r, 0));
+    self.onmessage = async (e) => {
+      const m = e.data;
+      if (m.type !== 'solve') return;
+      current = m.id;
+      if (m.gray) {
+        cache = { key: m.key, W: m.W, H: m.H, gray: m.gray, blur: Stipple.detailBlur(m.gray, m.W, m.H), edge: Stipple.edgeMap(m.gray, m.W, m.H) };
+      }
+      if (!cache || cache.key !== m.key) { self.postMessage({ type: 'resend', id: m.id }); return; }
+      const W = cache.W, H = cache.H, N = m.N;
+      const dens = Stipple.buildDensity(cache.gray, cache.blur, cache.edge, W, H, m.opts);
+      const rng = Stipple.mulberry32(m.seed);
+      const pts = Stipple.initPoints(N, dens, W, rng);
+      const send = (type, k, final) => {
+        const tone = Stipple.toneAt(pts, N, dens, W, H), sp = Stipple.spacingAt(pts, N, dens, W, H);
+        const p = final ? pts : pts.slice();
+        const msg = { type, id: m.id, k, pts: p, tone, sp };
+        if (final) { const r = Float32Array.from(sp).sort(); msg.dense = r[Math.floor(r.length * 0.02)] || 0; }
+        self.postMessage(msg, [p.buffer, tone.buffer, sp.buffer]);
+      };
+      send('frame', 0, false);
+      for (let k = 0; k < m.iters; k++) {
+        await tick();
+        if (current !== m.id) return;
+        Stipple.relaxStep(pts, N, dens, W, H, rng, k / m.iters);
+        self.postMessage({ type: 'progress', id: m.id, k: k + 1 });
+        if (k + 1 < m.iters && (k + 1) % m.stride === 0) send('frame', k + 1, false);
+      }
+      if (current !== m.id) return;
+      send('done', m.iters, true);
+    };
+  }
+
+  let worker = null, workerFailed = false;
+  function getWorker() {
+    if (workerFailed) return null;
+    if (worker) return worker;
+    try {
+      const src = $('src-d3').textContent + '\n' + $('src-engine').textContent + '\n;(' + workerMain.toString() + ')();';
+      const url = URL.createObjectURL(new Blob([src], { type: 'text/javascript' }));
+      const w = new Worker(url);
+      w.onmessage = onWorkerMessage;
+      w.onerror = () => {
+        workerFailed = true; worker = null;
+        try { w.terminate(); } catch (e) { /* already gone */ }
+        if (st.solving) solve(); // carry on in the page itself
+      };
+      worker = w; st.sentKey = 0;
+    } catch (e) { workerFailed = true; worker = null; }
+    return worker;
+  }
+
+  function onWorkerMessage(e) {
+    const m = e.data;
+    if (m.id !== st.token) return;
+    if (m.type === 'resend') { st.sentKey = 0; solve(); return; }
+    if (m.type === 'progress') {
+      setProg(m.k / Math.max(1, st.iters));
+      $('stats').textContent = 'Spacing dots ' + m.k + ' / ' + st.iters;
+      return;
+    }
+    st.N = m.pts.length / 2; st.pts = m.pts; st.tone = m.tone; st.sp = m.sp; st.off = st.nextOff; st.ptsW = st.W; st.ptsH = st.H;
+    if (m.type === 'frame') { scheduleRedraw(); return; }
+    st.dense = m.dense;
+    st.solving = false; st.elapsed = (performance.now() - st.t0) / 1000;
+    setProg(0);
+    redraw();
+  }
+
+  /* ---------- solving ---------- */
+  function densityOptions() {
+    return { auto: $('auto').checked, invert: $('invert').checked, bright: num('bright') / 100, contrast: num('contrast') / 100, edge: (num('edge') / 100) * 1.4, detail: num('detail') / 100,
+      mask: st.maskOn && st.mask ? { data: st.mask, w: st.mw, h: st.mh } : null, bg: num('bgd') / 100, feather: Math.round(num('soft') * 0.4) };
+  }
+  function setProg(v) { $('bar').style.width = Math.round(v * 100) + '%'; }
+
+  async function solve() {
+    if (!st.src) return;
+    clearTimeout(st.timer);
+    const token = ++st.token;
+    st.solving = true; st.t0 = performance.now();
+    const N = dotCount(), side = rasterSide(N), iters = num('passes');
+    st.iters = iters;
+    if (side !== st.side) {
+      $('stats').textContent = 'Preparing image…';
+      await tick();
+      if (token !== st.token) return;
+      prepare(side);
+      redraw(true);
+    }
+    const w = getWorker();
+    if (w) {
+      st.nextOff = Stipple.gaussOffsets(N, Stipple.mulberry32(st.seed ^ 0x9e3779b9));
+      const msg = { type: 'solve', id: token, key: st.key, N, iters, seed: st.seed, opts: densityOptions(), stride: N > 300000 ? 3 : N > 150000 ? 2 : 1 };
+      const transfer = [];
+      if (st.sentKey !== st.key) { msg.gray = st.gray.slice(); msg.W = st.W; msg.H = st.H; transfer.push(msg.gray.buffer); st.sentKey = st.key; }
+      $('stats').textContent = 'Preparing dots…';
+      w.postMessage(msg, transfer);
+      return;
+    }
+    return solveInPage(token, N, iters);
+  }
+
+  // Fallback when the browser will not run the worker: the same algorithm on the page thread.
+  async function solveInPage(token, N, iters) {
+    $('stats').textContent = 'Preparing dots…';
+    await tick();
+    if (token !== st.token) return;
+    mainMaps();
+    const dens = Stipple.buildDensity(st.gray, st.blur, st.edge, st.W, st.H, densityOptions());
+    const rng = Stipple.mulberry32(st.seed);
+    const pts = Stipple.initPoints(N, dens, st.W, rng);
+    st.N = N; st.pts = pts; st.ptsW = st.W; st.ptsH = st.H; st.off = Stipple.gaussOffsets(N, Stipple.mulberry32(st.seed ^ 0x9e3779b9));
+    st.tone = Stipple.toneAt(pts, N, dens, st.W, st.H); st.sp = Stipple.spacingAt(pts, N, dens, st.W, st.H);
+    redraw(true);
+    const stride = N > 300000 ? 3 : N > 150000 ? 2 : 1; // repaint less often when a repaint is expensive
+    for (let k = 0; k < iters; k++) {
+      await tick();
+      if (token !== st.token) return;
+      Stipple.relaxStep(pts, N, dens, st.W, st.H, rng, k / iters);
+      setProg((k + 1) / iters);
+      $('stats').textContent = 'Spacing dots ' + (k + 1) + ' / ' + iters;
+      if ((k + 1) % stride === 0 && k + 1 < iters) {
+        st.tone = Stipple.toneAt(pts, N, dens, st.W, st.H); st.sp = Stipple.spacingAt(pts, N, dens, st.W, st.H);
+        redraw(true);
+      }
+    }
+    if (token !== st.token) return;
+    st.tone = Stipple.toneAt(pts, N, dens, st.W, st.H); st.sp = Stipple.spacingAt(pts, N, dens, st.W, st.H);
+    const ranked = Float32Array.from(st.sp).sort();
+    st.dense = ranked[Math.floor(ranked.length * 0.02)] || 0; // spacing in the densest 2% of the picture, raster px
+    st.solving = false; st.elapsed = (performance.now() - st.t0) / 1000;
+    setProg(0);
+    redraw();
+  }
+  function scheduleSolve() { clearTimeout(st.timer); st.timer = setTimeout(solve, workerFailed ? (dotCount() > 150000 ? 600 : 220) : 250); }
+
+  /* ---------- geometry and painting ---------- */
+  function geom() {
+    let [pw, ph] = PAPERS[$('paper').value];
+    const o = $('orient').value;
+    const landscape = o === 'auto' ? st.W > st.H : o === 'landscape';
+    if (landscape !== pw > ph) [pw, ph] = [ph, pw];
+    const m = num('margin');
+    const s = Math.max(0.0001, Math.min((pw - 2 * m) / st.W, (ph - 2 * m) / st.H));
+    return { pw, ph, s, ox: (pw - st.W * s) / 2, oy: (ph - st.H * s) / 2 };
+  }
+  function radiusMm(tone) {
+    return RAD.d * (1 - RAD.v + RAD.v * (0.4 + 1.2 * tone));
+  }
+  // Dot positions in raster px with the Randomness scatter applied (sigma = half the slider times local spacing).
+  function positions() {
+    const amt = (num('jit') / 100) * 0.5, p = st.pts, o = st.off, sp = st.sp, W = st.ptsW, H = st.ptsH;
+    const out = new Float32Array(st.N * 2);
+    for (let i = 0; i < st.N; i++) {
+      const s = sp[i] * amt;
+      const x = p[i * 2] + o[i * 2] * s, y = p[i * 2 + 1] + o[i * 2 + 1] * s;
+      out[i * 2] = x < 0 ? 0 : x > W ? W : x;
+      out[i * 2 + 1] = y < 0 ? 0 : y > H ? H : y;
+    }
+    return out;
+  }
+  // step > 1 paints a thinned draft: every step-th dot, drawn slightly larger so the tone stays close.
+  function paint(ctx, pxmm, g, showSource, step = 1) {
+    ctx.fillStyle = $('paperc').value;
+    ctx.fillRect(0, 0, g.pw * pxmm, g.ph * pxmm);
+    if (showSource && st.src) {
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(st.src, g.ox * pxmm, g.oy * pxmm, st.W * g.s * pxmm, st.H * g.s * pxmm);
+      return;
+    }
+    if (!st.pts) return;
+    ctx.fillStyle = $('inkc').value;
+    ctx.beginPath();
+    // Points live in the raster they were solved on (ptsW); scale to the current one so a resolution change never shows them misplaced.
+    const amt = (num('jit') / 100) * 0.5, p = st.pts, o = st.off, sp = st.sp, PW = st.ptsW, PH = st.ptsH;
+    const k = g.s * pxmm * (st.W / PW), rs = Math.sqrt(step);
+    const square = radiusMm(1) * pxmm * rs < 1.1; // below about a pixel squares are indistinguishable and paint roughly twice as fast
+    for (let i = 0; i < st.N; i += step) {
+      const s = sp[i] * amt;
+      let x = p[i * 2] + o[i * 2] * s, y = p[i * 2 + 1] + o[i * 2 + 1] * s;
+      x = x < 0 ? 0 : x > PW ? PW : x; y = y < 0 ? 0 : y > PH ? PH : y;
+      const cx = g.ox * pxmm + x * k, cy = g.oy * pxmm + y * k, r = radiusMm(st.tone[i]) * pxmm * rs;
+      if (square) ctx.rect(cx - r, cy - r, 2 * r, 2 * r);
+      else { ctx.moveTo(cx + r, cy); ctx.arc(cx, cy, r, 0, 6.283185307); }
+    }
+    ctx.fill();
+  }
+
+  let rafId = 0;
+  let fullTimer = 0;
+  // Slider drags repaint a thinned draft, then one full repaint when the drag pauses. Only matters above 120k dots.
+  function scheduleRedraw() {
+    if (rafId) return;
+    rafId = requestAnimationFrame(() => {
+      rafId = 0; redraw(true);
+      clearTimeout(fullTimer);
+      if (st.N > 120000 && !st.solving) fullTimer = setTimeout(() => redraw(false), 220);
+    });
+  }
+
+  function redraw(draft) {
+    if (!st.W) return;
+    const g = geom(), stage = $('stage');
+    const pad = window.innerWidth <= 860 ? 56 : 98; // matches the sheet box padding, with a little to spare
+    const fit = Math.min(Math.max(60, stage.clientWidth - pad) / g.pw, Math.max(60, stage.clientHeight - pad) / g.ph);
+    const cssPerMm = fit * st.zoom, dpr = Math.min(2, window.devicePixelRatio || 1);
+    let pxmm = cssPerMm * dpr;
+    pxmm *= Math.min(1, 6000 / (Math.max(g.pw, g.ph) * pxmm));
+    const key = [g.pw, g.ph, cssPerMm.toFixed(3), pxmm.toFixed(3)].join('|');
+    if (key !== st.sizeKey) {
+      st.sizeKey = key;
+      cv.style.width = g.pw * cssPerMm + 'px';
+      cv.style.height = g.ph * cssPerMm + 'px';
+      cv.width = Math.round(g.pw * pxmm);
+      cv.height = Math.round(g.ph * pxmm);
+    }
+    const step = draft && st.N > 120000 ? Math.ceil(st.N / 120000) : 1;
+    paint(cv.getContext('2d'), cv.width / g.pw, g, st.compare, step);
+    $('dimW').textContent = fmt(g.pw) + ' mm';
+    $('dimH').textContent = fmt(g.ph) + ' mm';
+    positionOverlay(g);
+    if (!st.solving && st.pts && step === 1) updateStats();
+  }
+
+  function updateStats() {
+    if (!st.pts) return;
+    const g = geom();
+    let area = 0;
+    for (let i = 0; i < st.N; i++) { const r = radiusMm(st.tone[i]); area += Math.PI * r * r; }
+    const cov = (area / (st.W * g.s * st.H * g.s)) * 100;
+    $('specDots').textContent = st.N.toLocaleString();
+    $('specSheet').textContent = fmt(g.pw) + ' × ' + fmt(g.ph) + ' mm';
+    $('specDot').textContent = num('dia').toFixed(2) + ' mm' + (num('var') > 0 ? ' · varies' : '');
+    $('specInk').textContent = (cov < 10 ? cov.toFixed(1) : Math.round(cov)) + '%' + (cov > 100 ? ' · overlap' : '');
+    $('stats').textContent = st.compare ? 'Showing the original photo' : st.elapsed ? 'Ready · solved in ' + st.elapsed.toFixed(1) + ' s' : 'Ready';
+    // In the darkest areas a hexagonal packing puts neighbours 1.075 spacings apart; dots wider than that merge.
+    const nn = 1.075 * st.dense * g.s, dmax = 2 * radiusMm(1), warn = $('warn');
+    if (st.dense > 0 && dmax > 0.95 * nn) {
+      const fit = Math.max(0.05, Math.floor(((num('dia') * 0.9 * nn) / dmax) * 20) / 20);
+      warn.textContent = 'Dots merge in the darkest areas. Spacing there is ' + nn.toFixed(2) + ' mm and the largest dot is ' + dmax.toFixed(2) + ' mm, so tonal steps are lost. Set dot size to ' + fit.toFixed(2) + ' mm or lower, or use a larger paper size.';
+      warn.hidden = false;
+    } else warn.hidden = true;
+  }
+
+  /* ---------- export ---------- */
+  let noteTimer = 0;
+  function note(msg) {
+    $('dlnote').textContent = msg;
+    clearTimeout(noteTimer);
+    noteTimer = setTimeout(() => { $('dlnote').textContent = DL_NOTE; }, 5000);
+  }
+  async function save(filename, data) {
+    if (!dl) { // plain browser (not claude.ai): normal file download
+      try {
+        const blob = data instanceof Blob ? data : new Blob([data], { type: filename.endsWith('.svg') ? 'image/svg+xml' : 'application/octet-stream' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = filename;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+        note('Saved ' + filename + '.');
+      } catch (e) { note('Could not save the file' + (e && e.message ? ': ' + e.message : '.')); }
+      return;
+    }
+    try {
+      const r = await dl.save({ filename, data });
+      note(r.status === 'saved' ? 'Saved ' + filename + '.' : 'Sent ' + filename + '.');
+    } catch (e) {
+      if (e && e.code === 'declined') note('Download cancelled.');
+      else if (e && e.code === 'rate_limited') note('A save prompt is already open. Answer it, then try again.');
+      else note('Could not save the file' + (e && e.message ? ': ' + e.message : '.'));
+    }
+  }
+  function baseName() { return 'stipple-' + $('paper').value.toLowerCase() + '-' + st.N + 'dots'; }
+
+  async function exportPng() {
+    if (!st.pts || st.solving) { note('Wait for the dots to finish spacing, then export.'); return; }
+    const g = geom();
+    let dpi = num('dpi'), pxmm = dpi / 25.4;
+    const px = g.pw * g.ph * pxmm * pxmm;
+    if (px > 64e6) { pxmm *= Math.sqrt(64e6 / px); dpi = Math.round(pxmm * 25.4); } // stay inside browser canvas limits
+    const c = document.createElement('canvas');
+    c.width = Math.round(g.pw * pxmm); c.height = Math.round(g.ph * pxmm);
+    paint(c.getContext('2d'), c.width / g.pw, g, false);
+    const blob = await new Promise((res) => c.toBlob(res, 'image/png'));
+    if (!blob) { note('The browser could not encode a PNG this large. Choose a lower export resolution.'); return; }
+    await save(baseName() + '-' + dpi + 'dpi.png', blob);
+  }
+
+  async function exportSvg() {
+    if (!st.pts || st.solving) { note('Wait for the dots to finish spacing, then export.'); return; }
+    const g = geom(), f = (v) => Math.round(v * 100) / 100, p = positions();
+    const out = [
+      '<svg xmlns="http://www.w3.org/2000/svg" width="' + g.pw + 'mm" height="' + g.ph + 'mm" viewBox="0 0 ' + g.pw + ' ' + g.ph + '">',
+      '<rect width="' + g.pw + '" height="' + g.ph + '" fill="' + $('paperc').value + '"/>',
+      '<g fill="' + $('inkc').value + '">',
+    ];
+    if (st.N <= 150000) {
+      for (let i = 0; i < st.N; i++) {
+        out.push('<circle cx="' + f(g.ox + p[i * 2] * g.s) + '" cy="' + f(g.oy + p[i * 2 + 1] * g.s) + '" r="' + Math.round(radiusMm(st.tone[i]) * 1000) / 1000 + '"/>');
+      }
+    } else {
+      // Large files: one stroked zero-length segment per dot, grouped into 24 size classes. About a third of the size of circles.
+      const nb = 24, rs = new Float32Array(st.N);
+      let rmin = Infinity, rmax = 0;
+      for (let i = 0; i < st.N; i++) { const r = radiusMm(st.tone[i]); rs[i] = r; if (r < rmin) rmin = r; if (r > rmax) rmax = r; }
+      const span = rmax - rmin, groups = Array.from({ length: nb }, () => []);
+      for (let i = 0; i < st.N; i++) {
+        const b = span < 1e-4 ? 0 : Math.min(nb - 1, Math.floor(((rs[i] - rmin) / span) * nb));
+        groups[b].push('M' + f(g.ox + p[i * 2] * g.s) + ' ' + f(g.oy + p[i * 2 + 1] * g.s) + 'h0');
+      }
+      groups.forEach((d, b) => {
+        if (!d.length) return;
+        const r = span < 1e-4 ? rmax : rmin + ((b + 0.5) * span) / nb;
+        out.push('<path fill="none" stroke="' + $('inkc').value + '" stroke-width="' + Math.round(2 * r * 1000) / 1000 + '" stroke-linecap="round" d="' + d.join('') + '"/>');
+      });
+    }
+    out.push('</g>', '</svg>');
+    await save(baseName() + '.svg', out.join('\n'));
+  }
+
+  /* ---------- stippled wordmark ---------- */
+  // The masthead title is drawn with this page's own engine: dots scatter, then settle into the letters.
+  function initMark() {
+    const c = $('mark');
+    if (!c) return;
+    const RW = 760, RH = 96, N = 2200;
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let m = null, raf = 0, t0 = 0, cw = 0;
+
+    const build = () => {
+      const off = document.createElement('canvas');
+      off.width = RW; off.height = RH;
+      const x = off.getContext('2d', { willReadFrequently: true });
+      x.fillStyle = '#fff'; x.fillRect(0, 0, RW, RH);
+      x.fillStyle = '#000'; x.textBaseline = 'alphabetic';
+      const text = 'STIPPLE PRESS';
+      const setFont = (px) => {
+        x.font = '900 expanded ' + px + 'px Archivo, "Arial Black", Arial, sans-serif';
+        if (x.font.indexOf(px + 'px') < 0) x.font = '900 ' + px + 'px Archivo, "Arial Black", Arial, sans-serif'; // browser without stretch keywords
+      };
+      setFont(100);
+      let w = x.measureText(text).width;
+      const fs = Math.max(20, Math.min(86, Math.floor((100 * (RW - 12)) / Math.max(1, w))));
+      setFont(fs);
+      w = x.measureText(text).width;
+      x.fillText(text, (RW - w) / 2, (RH + fs * 0.72) / 2);
+      const d = x.getImageData(0, 0, RW, RH).data;
+      const gray = new Float32Array(RW * RH);
+      for (let i = 0; i < gray.length; i++) gray[i] = d[i * 4] / 255;
+      const dens = Stipple.buildDensity(gray, gray, new Float32Array(RW * RH), RW, RH, { auto: false, invert: false, bright: 0, contrast: 0, edge: 0, detail: 0 });
+      const rng = Stipple.mulberry32(11);
+      const pts = Stipple.initPoints(N, dens, RW, rng);
+      for (let k = 0; k < 14; k++) Stipple.relaxStep(pts, N, dens, RW, RH, rng, k / 14);
+      const start = new Float32Array(N * 2), delay = new Float32Array(N);
+      for (let i = 0; i < N; i++) {
+        start[i * 2] = rng() * RW; start[i * 2 + 1] = rng() * RH;
+        delay[i] = (pts[i * 2] / RW) * 0.5 + rng() * 0.08; // letters assemble left to right
+      }
+      return { pts, start, delay };
+    };
+
+    const resize = () => {
+      const dpr = Math.min(2, window.devicePixelRatio || 1), w = c.clientWidth || RW;
+      c.width = Math.round(w * dpr); c.height = Math.round((w * dpr * RH) / RW);
+      cw = (w / RW) * dpr;
+    };
+    const draw = (T) => {
+      if (!m) return;
+      const ctx = c.getContext('2d');
+      ctx.clearRect(0, 0, c.width, c.height);
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--ink').trim() || '#111';
+      ctx.beginPath();
+      const r = 1.15 * cw;
+      for (let i = 0; i < N; i++) {
+        let e = 1;
+        if (T !== null) { const u = Math.min(1, Math.max(0, (T - m.delay[i] * 1000) / 1100)); e = 1 - Math.pow(1 - u, 3); }
+        const px = (m.start[i * 2] + (m.pts[i * 2] - m.start[i * 2]) * e) * cw;
+        const py = (m.start[i * 2 + 1] + (m.pts[i * 2 + 1] - m.start[i * 2 + 1]) * e) * cw;
+        ctx.moveTo(px + r, py);
+        ctx.arc(px, py, r, 0, 6.283185307);
+      }
+      ctx.fill();
+    };
+    const play = () => {
+      t0 = performance.now();
+      const step = (now) => {
+        const T = now - t0;
+        draw(T);
+        if (T < 1800) raf = requestAnimationFrame(step); else { raf = 0; draw(null); }
+      };
+      raf = requestAnimationFrame(step);
+    };
+    const settle = () => { if (!raf) draw(null); };
+    const begin = () => {
+      try { m = build(); } catch (e) { return; }
+      resize();
+      if (reduce) draw(null); else play();
+    };
+
+    const fontReady = document.fonts && document.fonts.load
+      ? Promise.race([document.fonts.load('900 86px Archivo'), new Promise((r) => setTimeout(r, 1500))])
+      : Promise.resolve();
+    fontReady.then(begin, begin);
+
+    if (window.ResizeObserver) new ResizeObserver(() => { if (m) { resize(); settle(); } }).observe(c);
+    if (window.matchMedia) {
+      const mq = window.matchMedia('(prefers-color-scheme: dark)');
+      if (mq.addEventListener) mq.addEventListener('change', settle);
+    }
+    new MutationObserver(settle).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  }
+
+  /* ---------- subject mask ---------- */
+  // st.mask: 1 = subject, 0 = background, at st.mw x st.mh. The solver thins the dots wherever it is 0.
+  function maskMsg(t) { const el = $('maskMsg'); el.textContent = t; el.hidden = !t; }
+  function updateUndo() { $('btnMaskUndo').disabled = !st.maskPrev; $('btnMaskClear').disabled = !st.maskOn; }
+  function resetMaskUi() { maskMsg(''); updateUndo(); drawOverlay(); }
+  let ovRaf = 0;
+  function scheduleOverlay() { if (ovRaf) return; ovRaf = requestAnimationFrame(() => { ovRaf = 0; drawOverlay(); }); }
+  // The overlay is its own canvas, so painting a stroke never repaints the dots.
+  function drawOverlay() {
+    const ov = $('ov');
+    const show = !!(st.maskOn && st.mask && ($('maskview').checked || st.tool));
+    ov.hidden = !show;
+    if (!show) return;
+    if (ov.width !== st.mw || ov.height !== st.mh) { ov.width = st.mw; ov.height = st.mh; }
+    const ctx = ov.getContext('2d'), img = ctx.createImageData(st.mw, st.mh), d = img.data, m = st.mask;
+    for (let i = 0; i < m.length; i++) { d[i * 4] = 212; d[i * 4 + 1] = 46; d[i * 4 + 2] = 22; d[i * 4 + 3] = (1 - m[i]) * 110; }
+    ctx.putImageData(img, 0, 0);
+  }
+  function positionOverlay(g) {
+    const ov = $('ov');
+    ov.style.left = (g.ox / g.pw) * 100 + '%'; ov.style.top = (g.oy / g.ph) * 100 + '%';
+    ov.style.width = ((st.W * g.s) / g.pw) * 100 + '%'; ov.style.height = ((st.H * g.s) / g.ph) * 100 + '%';
+  }
+
+  // Perceptual-ish colour distance ("redmean"), 0 to about 765.
+  const rmean = (r1, g1, b1, r2, g2, b2) => {
+    const rm = (r1 + r2) / 2, dr = r1 - r2, dg = g1 - g2, db = b1 - b2;
+    return Math.sqrt((2 + rm / 256) * dr * dr + 4 * dg * dg + (2 + (255 - rm) / 256) * db * db);
+  };
+
+  // Background = everything reachable from the chosen edges through pixels that match the edge colours and have no strong step between neighbours.
+  function detectSubject() {
+    if (!st.src) return;
+    const sel = st.edges;
+    if (!sel.top && !sel.left && !sel.right && !sel.bottom) { maskMsg('Pick at least one edge that shows background.'); return; }
+    const w = st.mw, h = st.mh, n = w * h;
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const x = c.getContext('2d', { willReadFrequently: true });
+    x.imageSmoothingQuality = 'high'; x.drawImage(st.src, 0, 0, w, h);
+    const d = x.getImageData(0, 0, w, h).data;
+    let R = new Float32Array(n), G = new Float32Array(n), B = new Float32Array(n);
+    for (let i = 0; i < n; i++) { R[i] = d[i * 4]; G[i] = d[i * 4 + 1]; B[i] = d[i * 4 + 2]; }
+    for (let k = 0; k < 2; k++) { R = Stipple.blur3(R, w, h); G = Stipple.blur3(G, w, h); B = Stipple.blur3(B, w, h); }
+
+    const seeds = []; // a 3 px band along each chosen edge
+    for (let y = 0; y < h; y++) for (let xx = 0; xx < w; xx++) {
+      if ((sel.top && y < 3) || (sel.bottom && y >= h - 3) || (sel.left && xx < 3) || (sel.right && xx >= w - 3)) seeds.push(y * w + xx);
+    }
+    // Background colour model: up to 4 clusters from the seed colours (farthest-point start, then k-means).
+    const stepS = Math.max(1, Math.ceil(seeds.length / 5000)), sp = [];
+    for (let i = 0; i < seeds.length; i += stepS) sp.push(seeds[i]);
+    const cr = [R[sp[0]]], cg = [G[sp[0]]], cb = [B[sp[0]]];
+    while (cr.length < 4) {
+      let best = -1, bd = -1;
+      for (const p of sp) {
+        let m = Infinity;
+        for (let j = 0; j < cr.length; j++) m = Math.min(m, rmean(R[p], G[p], B[p], cr[j], cg[j], cb[j]));
+        if (m > bd) { bd = m; best = p; }
+      }
+      if (bd < 40) break; // the remaining seed colours already sit close to a cluster
+      cr.push(R[best]); cg.push(G[best]); cb.push(B[best]);
+    }
+    const K = cr.length;
+    for (let it = 0; it < 8; it++) {
+      const sr = new Float64Array(K), sg = new Float64Array(K), sb = new Float64Array(K), sc = new Float64Array(K);
+      for (const p of sp) {
+        let bj = 0, bd = Infinity;
+        for (let j = 0; j < K; j++) { const dd = rmean(R[p], G[p], B[p], cr[j], cg[j], cb[j]); if (dd < bd) { bd = dd; bj = j; } }
+        sr[bj] += R[p]; sg[bj] += G[p]; sb[bj] += B[p]; sc[bj]++;
+      }
+      for (let j = 0; j < K; j++) if (sc[j]) { cr[j] = sr[j] / sc[j]; cg[j] = sg[j] / sc[j]; cb[j] = sb[j] / sc[j]; }
+    }
+    const cost = new Float32Array(n); // distance to the nearest background colour
+    for (let i = 0; i < n; i++) {
+      let m = Infinity;
+      for (let j = 0; j < K; j++) { const dd = rmean(R[i], G[i], B[i], cr[j], cg[j], cb[j]); if (dd < m) m = dd; }
+      cost[i] = m;
+    }
+
+    const tol = 30 + 1.5 * num('sens'), stepTol = tol * 0.5;
+    const bg = new Uint8Array(n), stack = new Int32Array(n);
+    let top = 0;
+    const grow = (p, q) => {
+      if (!bg[q] && cost[q] < tol && rmean(R[p], G[p], B[p], R[q], G[q], B[q]) < stepTol) { bg[q] = 1; stack[top++] = q; }
+    };
+    for (const i of seeds) if (!bg[i] && cost[i] < tol) { bg[i] = 1; stack[top++] = i; }
+    while (top) {
+      const p = stack[--top], px = p % w;
+      if (px > 0) grow(p, p - 1);
+      if (px < w - 1) grow(p, p + 1);
+      if (p >= w) grow(p, p - w);
+      if (p < n - w) grow(p, p + w);
+    }
+
+    const S = new Float32Array(n);
+    for (let i = 0; i < n; i++) S[i] = bg[i] ? 0 : 1;
+    // Drop specks: keep subject blobs that cover at least 1.5% of the picture.
+    const lab = new Int32Array(n), sizes = [0];
+    for (let i = 0; i < n; i++) {
+      if (!S[i] || lab[i]) continue;
+      const id = sizes.length;
+      let cnt = 0, tp = 0;
+      stack[tp++] = i; lab[i] = id;
+      while (tp) {
+        const p = stack[--tp], px = p % w;
+        cnt++;
+        if (px > 0 && S[p - 1] && !lab[p - 1]) { lab[p - 1] = id; stack[tp++] = p - 1; }
+        if (px < w - 1 && S[p + 1] && !lab[p + 1]) { lab[p + 1] = id; stack[tp++] = p + 1; }
+        if (p >= w && S[p - w] && !lab[p - w]) { lab[p - w] = id; stack[tp++] = p - w; }
+        if (p < n - w && S[p + w] && !lab[p + w]) { lab[p + w] = id; stack[tp++] = p + w; }
+      }
+      sizes.push(cnt);
+    }
+    let kept = 0;
+    for (let i = 0; i < n; i++) if (S[i]) { if (sizes[lab[i]] < n * 0.015) S[i] = 0; else kept++; }
+    const frac = kept / n;
+    if (frac > 0.97) { maskMsg('Nothing looked like background. Raise Background tolerance, or paint the mask by hand.'); return; }
+    if (frac < 0.03) { maskMsg('Almost everything matched the background colour. Lower Background tolerance, or untick an edge the subject touches.'); return; }
+    st.maskPrev = st.mask ? st.mask.slice() : 'none';
+    st.mask = Stipple.blur3(S, w, h);
+    st.maskOn = true;
+    maskMsg('Subject found: ' + Math.round(frac * 100) + '% of the picture. Red shows what gets thinned. Fix any mistakes with the brush.');
+    updateUndo(); drawOverlay(); solve();
+  }
+
+  function stamp(cx, cy, r, target) {
+    const w = st.mw, h = st.mh, m = st.mask;
+    const x0 = Math.max(0, Math.floor(cx - r)), x1 = Math.min(w - 1, Math.ceil(cx + r));
+    const y0 = Math.max(0, Math.floor(cy - r)), y1 = Math.min(h - 1, Math.ceil(cy + r));
+    const hard = r * 0.55;
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      const dd = Math.hypot(x + 0.5 - cx, y + 0.5 - cy);
+      if (dd > r) continue;
+      const a = dd <= hard ? 1 : (r - dd) / (r - hard);
+      const i = y * w + x;
+      m[i] += (target - m[i]) * a;
+    }
+  }
+  function maskPoint(e) {
+    const rect = cv.getBoundingClientRect(), g = geom();
+    const xmm = ((e.clientX - rect.left) / rect.width) * g.pw, ymm = ((e.clientY - rect.top) / rect.height) * g.ph;
+    return [((xmm - g.ox) / (st.W * g.s)) * st.mw, ((ymm - g.oy) / (st.H * g.s)) * st.mh];
+  }
+  function paintAt(e) {
+    const [px, py] = maskPoint(e), target = st.tool === 'keep' ? 1 : 0;
+    const r = Math.max(1.5, ((num('bsize') / 100) * st.mw) / 2), step = Math.max(1, r * 0.3);
+    if (!st.last) stamp(px, py, r, target);
+    else {
+      const dx = px - st.last[0], dy = py - st.last[1], k = Math.max(1, Math.ceil(Math.hypot(dx, dy) / step));
+      for (let i = 1; i <= k; i++) stamp(st.last[0] + (dx * i) / k, st.last[1] + (dy * i) / k, r, target);
+    }
+    st.last = [px, py];
+    scheduleOverlay();
+  }
+  function moveRing(e) {
+    const ring = $('ring');
+    if (!st.tool) { ring.hidden = true; return; }
+    const r = cv.getBoundingClientRect(), g = geom();
+    const dcss = (num('bsize') / 100) * ((st.W * g.s) / g.pw) * r.width;
+    ring.style.width = ring.style.height = dcss + 'px';
+    ring.style.left = e.clientX - r.left + 'px'; ring.style.top = e.clientY - r.top + 'px';
+    ring.hidden = false;
+  }
+
+  function wireMask() {
+    document.querySelectorAll('[data-edge]').forEach((b) => b.addEventListener('click', () => {
+      const k = b.dataset.edge;
+      st.edges[k] = !st.edges[k]; b.setAttribute('aria-pressed', String(st.edges[k]));
+    }));
+    $('sens').addEventListener('input', labels);
+    $('bsize').addEventListener('input', labels);
+    ['bgd', 'soft'].forEach((id) => $(id).addEventListener('input', () => { labels(); if (st.maskOn) scheduleSolve(); }));
+    $('maskview').addEventListener('change', drawOverlay);
+    $('btnDetect').addEventListener('click', detectSubject);
+    $('btnMaskClear').addEventListener('click', () => {
+      if (!st.maskOn) return;
+      st.maskPrev = st.mask; st.mask = null; st.maskOn = false;
+      maskMsg(''); updateUndo(); drawOverlay(); solve();
+    });
+    $('btnMaskUndo').addEventListener('click', () => {
+      const p = st.maskPrev;
+      if (!p) return;
+      st.maskPrev = null; st.mask = p === 'none' ? null : p; st.maskOn = !!st.mask;
+      maskMsg(''); updateUndo(); drawOverlay(); solve();
+    });
+    document.querySelectorAll('[data-tool]').forEach((b) => b.addEventListener('click', () => {
+      st.tool = st.tool === b.dataset.tool ? null : b.dataset.tool;
+      document.querySelectorAll('[data-tool]').forEach((o) => o.setAttribute('aria-pressed', String(o.dataset.tool === st.tool)));
+      document.querySelector('.sheet').classList.toggle('brush', !!st.tool);
+      if (!st.tool) $('ring').hidden = true;
+      drawOverlay();
+    }));
+    cv.addEventListener('pointerdown', (e) => {
+      if (!st.tool || !st.src || e.button > 0) return;
+      st.maskPrev = st.mask ? st.mask.slice() : 'none';
+      if (!st.mask) st.mask = new Float32Array(st.mw * st.mh).fill(st.tool === 'keep' ? 0 : 1); // first "keep" stroke starts from nothing, first "remove" from everything
+      st.maskOn = true; st.painting = true; st.last = null;
+      try { cv.setPointerCapture(e.pointerId); } catch (err) { /* synthetic pointer */ }
+      e.preventDefault();
+      maskMsg('');
+      paintAt(e);
+    });
+    cv.addEventListener('pointermove', (e) => { moveRing(e); if (st.painting) paintAt(e); });
+    const endStroke = () => {
+      if (!st.painting) return;
+      st.painting = false; st.last = null;
+      updateUndo(); scheduleSolve();
+    };
+    cv.addEventListener('pointerup', endStroke);
+    cv.addEventListener('pointercancel', endStroke);
+    cv.addEventListener('pointerleave', () => { $('ring').hidden = true; });
+  }
+
+  /* ---------- wiring ---------- */
+  function syncPresets() {
+    const ink = $('inkc').value.toLowerCase(), paper = $('paperc').value.toLowerCase(), inv = $('invert').checked;
+    let hit = -1;
+    document.querySelectorAll('.preset').forEach((b, i) => {
+      const p = PRESETS[i];
+      const on = p.ink.toLowerCase() === ink && p.paper.toLowerCase() === paper && p.invert === inv;
+      if (on) hit = i;
+      b.setAttribute('aria-pressed', String(on));
+    });
+    $('presetName').textContent = hit >= 0 ? PRESETS[hit].name : 'Custom colours';
+  }
+
+  function init() {
+    labels();
+    getWorker(); // start parsing the solver early
+    PRESETS.forEach((p) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'preset'; b.title = p.name; b.setAttribute('aria-label', p.name);
+      b.style.background = p.paper;
+      const i = document.createElement('i'); i.style.background = p.ink; b.appendChild(i);
+      b.addEventListener('click', () => {
+        const flip = $('invert').checked !== p.invert;
+        $('inkc').value = p.ink; $('paperc').value = p.paper; $('invert').checked = p.invert;
+        syncPresets();
+        if (flip) solve(); else redraw();
+      });
+      $('presets').appendChild(b);
+    });
+
+    ['count', 'bright', 'contrast', 'detail', 'edge', 'auto', 'invert', 'passes'].forEach((id) => {
+      $(id).addEventListener('input', () => { labels(); syncPresets(); scheduleSolve(); });
+    });
+    ['dia', 'var', 'jit', 'paper', 'orient', 'margin', 'inkc', 'paperc'].forEach((id) => {
+      $(id).addEventListener('input', () => { labels(); syncPresets(); scheduleRedraw(); });
+    });
+    $('btnShuffle').addEventListener('click', () => { st.seed = (Math.random() * 1e9) | 0; solve(); });
+    $('btnSample').addEventListener('click', useSample);
+    $('btnPng').addEventListener('click', exportPng);
+    $('btnSvg').addEventListener('click', exportSvg);
+    $('btnCompare').addEventListener('click', () => {
+      st.compare = !st.compare;
+      $('btnCompare').setAttribute('aria-pressed', String(st.compare));
+      $('btnCompare').textContent = st.compare ? 'Showing original' : 'Compare original';
+      redraw();
+    });
+
+    wireMask();
+    $('file').addEventListener('change', (e) => { loadFile(e.target.files[0]); e.target.value = ''; });
+    const drop = $('drop');
+    document.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('over'); });
+    document.addEventListener('dragleave', (e) => { if (!e.relatedTarget) drop.classList.remove('over'); });
+    document.addEventListener('drop', (e) => {
+      e.preventDefault(); drop.classList.remove('over');
+      if (e.dataTransfer && e.dataTransfer.files.length) loadFile(e.dataTransfer.files[0]);
+    });
+    document.addEventListener('paste', (e) => {
+      const items = (e.clipboardData && e.clipboardData.items) || [];
+      for (const it of items) if (it.type.indexOf('image/') === 0) { loadFile(it.getAsFile()); break; }
+    });
+
+    document.querySelectorAll('.zoom button').forEach((b) => {
+      b.addEventListener('click', () => {
+        st.zoom = parseFloat(b.dataset.zoom);
+        document.querySelectorAll('.zoom button').forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
+        redraw();
+        const s = $('stage');
+        s.scrollLeft = (s.scrollWidth - s.clientWidth) / 2; s.scrollTop = (s.scrollHeight - s.clientHeight) / 2;
+      });
+    });
+    let raf = 0;
+    new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(redraw); }).observe($('stage'));
+
+    // Inside claude.ai the host's download capability is used; anywhere else, plain anchor downloads.
+    if (window.claude && window.claude.use) {
+      window.claude.use('downloads').then((d) => { dl = d || null; }).catch(() => { dl = null; });
+    }
+    // Phones and low-memory devices: cap the dot count (150,000) so the tab does not run out of memory.
+    const weak = (window.matchMedia && matchMedia('(pointer: coarse)').matches) || (navigator.deviceMemory && navigator.deviceMemory <= 4) || window.innerWidth < 700;
+    if (weak) {
+      $('count').max = '82'; // 500 * 1000^0.82 ~ 150,000
+      if (num('count') > 82) $('count').value = '77';
+      const h = $('count').parentNode.querySelector('.hint');
+      if (h) h.textContent = 'Capped at 150,000 on this device to keep the browser from running out of memory. Use a desktop for up to 500,000.';
+    }
+    syncPresets();
+    useSample();
+    setTimeout(initMark, 0);
+  }
+  init();
+})();
+</script>
+
+</html>

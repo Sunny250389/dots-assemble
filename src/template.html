@@ -1,0 +1,435 @@
+<title>Stipple Press</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Martian+Mono:wght@400;500&display=swap">
+<style>
+/* Layout concept: a printmaker's proofing desk. A masthead whose wordmark is itself stippled, then the sheet on a dot-grid desk with crop marks and dimension lines, a caption plate under it, and the controls in a quiet rail beside it. */
+:root {
+  --bg: #ECEDEF;
+  --field: #F7F7F8;
+  --ink: #0E1117;
+  --muted: #586070;
+  --line: #CBCFD6;
+  --line-strong: #9CA3B0;
+  --accent: #D42E16;
+  --accent-ink: #FFFFFF;
+  --desk: #DCDEE3;
+  --desk-dot: #B6BBC6;
+  --dim: #6A7282;
+  --sheet-shadow: rgba(14, 17, 23, 0.30);
+  --warn: #9A5300;
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Martian Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0C0E12; --field: #13161B; --ink: #E8EAEE; --muted: #8A93A3; --line: #252A32; --line-strong: #434B58;
+    --accent: #FF6B4F; --accent-ink: #1A0905; --desk: #07080A; --desk-dot: #1E232B; --dim: #808A9B;
+    --sheet-shadow: rgba(0, 0, 0, 0.45); --warn: #F2B24C;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0C0E12; --field: #13161B; --ink: #E8EAEE; --muted: #8A93A3; --line: #252A32; --line-strong: #434B58;
+  --accent: #FF6B4F; --accent-ink: #1A0905; --desk: #07080A; --desk-dot: #1E232B; --dim: #808A9B;
+  --sheet-shadow: rgba(0, 0, 0, 0.45); --warn: #F2B24C;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.45; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.app {
+  max-width: 1320px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+}
+
+/* masthead */
+.mast { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px 40px; flex-wrap: wrap; padding-bottom: 22px; }
+.wordmark { display: flex; align-items: center; gap: 18px; margin: 0; min-width: 0; flex: 1 1 520px; max-width: 840px; }
+.reg { width: 38px; height: 38px; flex: none; color: var(--accent); }
+#mark { display: block; width: min(100%, 760px); aspect-ratio: 760 / 96; height: auto; }
+.strap { margin: 0; max-width: 34ch; color: var(--muted); font-size: 13px; line-height: 1.5; padding-bottom: 6px; }
+
+/* layout */
+.layout { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 32px; align-items: start; }
+.stage-wrap { grid-column: 2; grid-row: 1; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); z-index: 5; min-width: 0; }
+.panel { grid-column: 1; grid-row: 1; min-width: 0; display: flex; flex-direction: column; }
+
+/* rail */
+.group { padding: 20px 0 18px; border-top: 1px dotted var(--line-strong); display: grid; gap: 15px; }
+.group:first-child { border-top: 0; padding-top: 4px; }
+.group h2, details.adv summary {
+  margin: 0; display: flex; align-items: center; gap: 10px; cursor: default;
+  font: 500 10.5px/1 var(--font-mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
+}
+details.adv summary { cursor: pointer; list-style: none; }
+details.adv summary::-webkit-details-marker { display: none; }
+.group h2::before, details.adv summary::before {
+  content: ""; width: 24px; height: 8px; flex: none;
+  background:
+    radial-gradient(circle at 3px 4px, var(--ink) 1.2px, transparent 1.7px),
+    radial-gradient(circle at 11px 4px, var(--ink) 2.2px, transparent 2.7px),
+    radial-gradient(circle at 19px 4px, var(--ink) 3.2px, transparent 3.7px);
+}
+details.adv[open] summary { margin-bottom: 15px; }
+
+.field { display: grid; gap: 7px; min-width: 0; }
+.field label, .field .lab { font-weight: 500; }
+.field .lab { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.field output { font: 400 11.5px var(--font-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.hint { color: var(--muted); font-size: 12px; line-height: 1.45; margin: 0; max-width: 42ch; }
+
+input[type="range"] {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 22px; margin: 0; cursor: pointer; border-radius: 2px;
+  background: radial-gradient(circle at 50% 50%, var(--line-strong) 0.9px, transparent 1.3px) 0 50% / 6px 6px repeat-x;
+}
+input[type="range"]::-webkit-slider-runnable-track { height: 22px; background: transparent; }
+input[type="range"]::-moz-range-track { height: 22px; background: transparent; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: 3px; border-radius: 50%; background: var(--ink); border: 3px solid var(--bg); box-shadow: 0 0 0 1px var(--ink); }
+input[type="range"]::-moz-range-thumb { width: 10px; height: 10px; border-radius: 50%; background: var(--ink); border: 3px solid var(--bg); box-shadow: 0 0 0 1px var(--ink); }
+input:focus-visible, select:focus-visible, button:focus-visible, .drop:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+select, .color {
+  font: inherit; color: var(--ink); background: var(--field); border: 1px solid var(--line-strong); border-radius: 2px; padding: 8px 10px; min-width: 0;
+}
+select { width: 100%; }
+.btn {
+  font: 600 13px var(--font-body); letter-spacing: 0.01em; color: var(--ink); background: transparent; border: 1px solid var(--line-strong);
+  border-radius: 2px; padding: 9px 14px; cursor: pointer; text-align: center; transition: background .15s, color .15s, border-color .15s;
+}
+.btn:hover { border-color: var(--ink); }
+.btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.btn.primary:hover { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn[disabled] { opacity: 0.4; cursor: not-allowed; }
+.btn[disabled]:hover { border-color: var(--line-strong); }
+.btn.primary[disabled]:hover { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+
+.drop { display: grid; gap: 4px; place-items: center; text-align: center; padding: 20px 12px; border: 2px dotted var(--line-strong); border-radius: 4px; cursor: pointer; background: var(--field); transition: border-color .15s, background .15s; }
+.drop.over { border-color: var(--accent); background: var(--bg); }
+.drop strong { font-weight: 600; font-size: 15px; }
+.drop span { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.drop input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+.checks { display: flex; gap: 20px; flex-wrap: wrap; }
+.check { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; }
+.check input { width: 16px; height: 16px; accent-color: var(--accent); margin: 0; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.presets { display: flex; gap: 8px; flex-wrap: wrap; }
+.preset { width: 40px; height: 40px; border-radius: 2px; border: 1px solid var(--line-strong); display: grid; place-items: center; cursor: pointer; padding: 0; }
+.preset i { width: 15px; height: 15px; border-radius: 50%; display: block; }
+.preset[aria-pressed="true"] { outline: 2px solid var(--accent); outline-offset: 2px; }
+.presetname { font: 400 11.5px var(--font-mono); color: var(--muted); margin: -4px 0 0; }
+.colors { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.color { padding: 3px; height: 36px; width: 100%; cursor: pointer; }
+
+/* stage */
+.stagebar { display: flex; justify-content: space-between; align-items: center; gap: 10px 14px; padding: 0 0 10px; flex-wrap: wrap; min-height: 34px; }
+#stats { font: 400 11.5px var(--font-mono); color: var(--muted); min-width: 0; }
+.tools { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.chip { font: 500 11px var(--font-mono); letter-spacing: 0.04em; color: var(--ink); background: transparent; border: 1px solid var(--line-strong); border-radius: 2px; padding: 5px 10px; cursor: pointer; transition: background .15s, color .15s; }
+.chip:hover { border-color: var(--ink); }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.zoom { display: inline-flex; }
+.zoom .chip { border-radius: 0; }
+.zoom .chip + .chip { margin-left: -1px; }
+.zoom .chip:first-child { border-radius: 2px 0 0 2px; }
+.zoom .chip:last-child { border-radius: 0 2px 2px 0; }
+
+.stage {
+  height: 640px; border: 1px solid var(--line); border-radius: 3px; overflow: auto; position: relative; background-color: var(--desk);
+  background-image: radial-gradient(var(--desk-dot) 1px, transparent 1.3px); background-size: 22px 22px;
+}
+.sheetbox { min-width: 100%; min-height: 100%; display: grid; place-items: center; padding: 58px 38px 38px 58px; width: max-content; }
+.frame { position: relative; line-height: 0; }
+.sheet { position: relative; box-shadow: 0 1px 2px var(--sheet-shadow), 0 14px 36px var(--sheet-shadow); line-height: 0; }
+.sheet.fresh { animation: sheetin .5s cubic-bezier(.2, .7, .2, 1); }
+@keyframes sheetin { from { opacity: 0; transform: translateY(12px) rotate(-0.6deg); } to { opacity: 1; transform: none; } }
+canvas { display: block; }
+
+.btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.btns .btn { flex: 1 1 auto; }
+.edges { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip:disabled { opacity: 0.4; cursor: not-allowed; }
+.chip:disabled:hover { border-color: var(--line-strong); }
+.ov { position: absolute; pointer-events: none; }
+.sheet.brush #cv { cursor: crosshair; touch-action: none; }
+.ring { position: absolute; border: 1.5px solid var(--accent); border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.65); }
+
+.crop { position: absolute; width: 0; height: 0; pointer-events: none; }
+.crop::before, .crop::after { content: ""; position: absolute; background: var(--accent); }
+.crop.tl { left: 0; top: 0; }       .crop.tr { left: 100%; top: 0; }
+.crop.bl { left: 0; top: 100%; }    .crop.br { left: 100%; top: 100%; }
+.crop.tl::before, .crop.bl::before { left: -22px; width: 15px; height: 1px; top: 0; }
+.crop.tr::before, .crop.br::before { left: 7px; width: 15px; height: 1px; top: 0; }
+.crop.tl::after, .crop.tr::after { top: -22px; height: 15px; width: 1px; left: 0; }
+.crop.bl::after, .crop.br::after { top: 7px; height: 15px; width: 1px; left: 0; }
+
+.dim { position: absolute; display: flex; align-items: center; gap: 8px; font: 400 10px/1 var(--font-mono); color: var(--dim); letter-spacing: 0.06em; pointer-events: none; }
+.dim i { flex: 1; background: var(--dim); }
+.dim::before, .dim::after { content: ""; position: absolute; background: var(--dim); }
+.dim.w { left: 0; right: 0; top: -40px; }
+.dim.w i { height: 1px; }
+.dim.w::before, .dim.w::after { top: -4px; width: 1px; height: 9px; }
+.dim.w::before { left: 0; }  .dim.w::after { right: 0; }
+.dim.h { top: 0; bottom: 0; left: -40px; flex-direction: column; }
+.dim.h i { width: 1px; }
+.dim.h span { writing-mode: vertical-rl; transform: rotate(180deg); }
+.dim.h::before, .dim.h::after { left: -4px; height: 1px; width: 9px; }
+.dim.h::before { top: 0; }  .dim.h::after { bottom: 0; }
+
+.bar { height: 2px; background: var(--line); margin-top: 12px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .1s linear; }
+
+.plate { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 16px; margin: 12px 0 0; padding-top: 10px; border-top: 1px solid var(--ink); }
+.plate div { min-width: 0; }
+.plate dt { font: 500 10px/1 var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.plate dd { margin: 6px 0 0; font: 500 13px/1.3 var(--font-mono); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.warn { margin: 12px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--warn); max-width: 80ch; }
+.export { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 16px; }
+.export .btn { padding: 11px 18px; }
+.export .note { color: var(--muted); font-size: 12px; flex: 1 1 200px; min-width: 0; }
+
+@media (max-width: 860px) {
+  .mast { padding-bottom: 14px; }
+  .wordmark { flex-basis: 100%; gap: 12px; }
+  .reg { width: 28px; height: 28px; }
+  .strap { max-width: 52ch; padding-bottom: 0; }
+  .layout { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .stage-wrap, .panel { grid-column: 1; }
+  .stage-wrap { grid-row: 1; background: var(--bg); padding-bottom: 8px; }
+  .panel { grid-row: 2; }
+  .stage { height: 340px; }
+  .sheetbox { padding: 30px 24px 24px 30px; }
+  .dim { display: none; }
+  .plate { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
+  .export { padding-top: 10px; }
+  .export .note { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="app">
+  <header class="mast">
+    <h1 class="wordmark">
+      <span class="sr">Stipple Press</span>
+      <svg class="reg" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="11" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M20 1v38M1 20h38" stroke="currentColor" stroke-width="1.5"/><circle cx="20" cy="20" r="2.5" fill="currentColor"/></svg>
+      <canvas id="mark" aria-hidden="true"></canvas>
+    </h1>
+    <p class="strap">Turn a photograph into a drawing made of dots. Everything runs in your browser and the image never leaves this device.</p>
+  </header>
+
+  <div class="layout">
+    <section class="stage-wrap" aria-label="Preview">
+      <div class="stagebar">
+        <span id="stats">Preparing sample…</span>
+        <span class="tools">
+          <button type="button" class="chip" id="btnCompare" aria-pressed="false">Compare original</button>
+          <span class="zoom" role="group" aria-label="Preview zoom">
+            <button type="button" class="chip" data-zoom="1" aria-pressed="true">Fit</button>
+            <button type="button" class="chip" data-zoom="2" aria-pressed="false">2×</button>
+            <button type="button" class="chip" data-zoom="4" aria-pressed="false">4×</button>
+          </span>
+        </span>
+      </div>
+      <div class="stage" id="stage">
+        <div class="sheetbox">
+          <div class="frame">
+            <div class="dim w" aria-hidden="true"><i></i><span id="dimW">210 mm</span><i></i></div>
+            <div class="dim h" aria-hidden="true"><i></i><span id="dimH">297 mm</span><i></i></div>
+            <div class="sheet"><canvas id="cv" aria-label="Stippled preview"></canvas><canvas id="ov" class="ov" hidden aria-hidden="true"></canvas></div>
+            <span class="ring" id="ring" hidden></span>
+            <span class="crop tl"></span><span class="crop tr"></span><span class="crop bl"></span><span class="crop br"></span>
+          </div>
+        </div>
+      </div>
+      <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+      <dl class="plate">
+        <div><dt>Dots</dt><dd id="specDots">…</dd></div>
+        <div><dt>Sheet</dt><dd id="specSheet">…</dd></div>
+        <div><dt>Dot size</dt><dd id="specDot">…</dd></div>
+        <div><dt>Ink coverage</dt><dd id="specInk">…</dd></div>
+      </dl>
+      <p class="warn" id="warn" hidden></p>
+      <div class="export">
+        <button type="button" class="btn primary" id="btnPng">Download PNG</button>
+        <button type="button" class="btn" id="btnSvg">Download SVG</button>
+        <span class="note" id="dlnote">PNG resolution is set under Paper. SVG is vector, in millimetres.</span>
+      </div>
+    </section>
+
+    <aside class="panel" aria-label="Controls">
+      <div class="group">
+        <h2>Image</h2>
+        <label class="drop" id="drop">
+          <input type="file" id="file" accept="image/*">
+          <strong>Choose an image</strong>
+          <span id="fname">or drop one here. Using the sample.</span>
+        </label>
+        <button type="button" class="btn" id="btnSample">Use sample image</button>
+      </div>
+
+      <div class="group">
+        <h2>Subject focus</h2>
+        <p class="hint">Keep the dots on the subject and thin them out behind it. Detect finds the background by flooding in from the edges you pick, so it works best on plain or softly blurred backgrounds.</p>
+        <div class="field">
+          <span class="lab">Edges that show background</span>
+          <div class="edges" role="group" aria-label="Edges that show background">
+            <button type="button" class="chip" data-edge="top" aria-pressed="true">Top</button>
+            <button type="button" class="chip" data-edge="left" aria-pressed="true">Left</button>
+            <button type="button" class="chip" data-edge="right" aria-pressed="true">Right</button>
+            <button type="button" class="chip" data-edge="bottom" aria-pressed="false">Bottom</button>
+          </div>
+          <p class="hint">Leave off any edge the subject touches, such as the bottom of a portrait.</p>
+        </div>
+        <div class="field">
+          <div class="lab"><label for="sens">Background tolerance</label><output id="sensOut"></output></div>
+          <input type="range" id="sens" min="0" max="100" step="1" value="40">
+          <p class="hint">Higher treats more colours as background.</p>
+        </div>
+        <div class="btns">
+          <button type="button" class="btn" id="btnDetect">Detect subject</button>
+          <button type="button" class="btn" id="btnMaskClear" disabled>Clear mask</button>
+        </div>
+        <p class="hint" id="maskMsg" role="status" hidden></p>
+        <div class="field">
+          <div class="lab"><label for="bgd">Background dots</label><output id="bgdOut"></output></div>
+          <input type="range" id="bgd" min="0" max="100" step="1" value="8">
+          <p class="hint">0% leaves the background blank. 100% ignores the mask.</p>
+        </div>
+        <div class="field">
+          <div class="lab"><label for="soft">Edge softness</label><output id="softOut"></output></div>
+          <input type="range" id="soft" min="0" max="100" step="1" value="35">
+        </div>
+        <div class="field">
+          <span class="lab">Brush</span>
+          <div class="edges" role="group" aria-label="Mask brush">
+            <button type="button" class="chip" data-tool="keep" aria-pressed="false">Keep subject</button>
+            <button type="button" class="chip" data-tool="remove" aria-pressed="false">Remove background</button>
+            <button type="button" class="chip" id="btnMaskUndo" disabled>Undo</button>
+          </div>
+        </div>
+        <div class="field">
+          <div class="lab"><label for="bsize">Brush size</label><output id="bsizeOut"></output></div>
+          <input type="range" id="bsize" min="2" max="30" step="1" value="8">
+          <p class="hint">Paint on the sheet, then release to update the dots. Lower the dot count while editing for quicker previews.</p>
+        </div>
+        <label class="check"><input type="checkbox" id="maskview" checked> Show mask overlay</label>
+      </div>
+
+      <div class="group">
+        <h2>Dots</h2>
+        <div class="field">
+          <div class="lab"><label for="count">Dot count</label><output id="countOut"></output></div>
+          <input type="range" id="count" min="0" max="100" step="1" value="77">
+          <p class="hint">Up to 500,000. Above 200,000 the spacing step can take 10 to 30 seconds and the preview refreshes every few passes. Pair high counts with a small dot size.</p>
+        </div>
+        <div class="field">
+          <div class="lab"><label for="dia">Dot size</label><output id="diaOut"></output></div>
+          <input type="range" id="dia" min="0.1" max="2" step="0.05" value="0.4">
+        </div>
+        <div class="field">
+          <div class="lab"><label for="var">Size follows tone</label><output id="varOut"></output></div>
+          <input type="range" id="var" min="0" max="100" step="1" value="0">
+          <p class="hint">0% keeps every dot the same size, so darkness comes only from density. Higher values also enlarge dots in dark areas.</p>
+        </div>
+        <div class="field">
+          <div class="lab"><label for="jit">Randomness</label><output id="jitOut"></output></div>
+          <input type="range" id="jit" min="0" max="100" step="1" value="40">
+          <p class="hint">Scatters each dot around its evenly spaced position, scaled to local density. 0 looks like a regular grain, 100 is nearly pure random.</p>
+        </div>
+        <button type="button" class="btn" id="btnShuffle">Reshuffle dots</button>
+      </div>
+
+      <div class="group">
+        <h2>Tone and edges</h2>
+        <div class="field">
+          <div class="lab"><label for="bright">Brightness</label><output id="brightOut"></output></div>
+          <input type="range" id="bright" min="-50" max="50" step="1" value="0">
+        </div>
+        <div class="field">
+          <div class="lab"><label for="contrast">Contrast</label><output id="contrastOut"></output></div>
+          <input type="range" id="contrast" min="-80" max="80" step="1" value="20">
+        </div>
+        <div class="field">
+          <div class="lab"><label for="detail">Detail boost</label><output id="detailOut"></output></div>
+          <input type="range" id="detail" min="0" max="100" step="1" value="20">
+          <p class="hint">Sharpens fine patterns such as fabric folds and hair so they survive as dot structure.</p>
+        </div>
+        <div class="field">
+          <div class="lab"><label for="edge">Edge emphasis</label><output id="edgeOut"></output></div>
+          <input type="range" id="edge" min="0" max="100" step="1" value="25">
+          <p class="hint">Adds dots along contours. Too much flattens tonal gradation.</p>
+        </div>
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="auto" checked> Auto levels</label>
+          <label class="check"><input type="checkbox" id="invert"> Invert tones</label>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>Paper</h2>
+        <div class="two">
+          <div class="field"><label for="paper">Size</label>
+            <select id="paper">
+              <option value="A6">A6 · 105 × 148 mm</option>
+              <option value="A5">A5 · 148 × 210 mm</option>
+              <option value="A4" selected>A4 · 210 × 297 mm</option>
+              <option value="A3">A3 · 297 × 420 mm</option>
+              <option value="Letter">US Letter · 8.5 × 11 in</option>
+              <option value="Square">Square · 200 × 200 mm</option>
+            </select>
+          </div>
+          <div class="field"><label for="orient">Orientation</label>
+            <select id="orient">
+              <option value="auto" selected>Match image</option>
+              <option value="portrait">Portrait</option>
+              <option value="landscape">Landscape</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <div class="lab"><label for="margin">Margin</label><output id="marginOut"></output></div>
+          <input type="range" id="margin" min="0" max="40" step="1" value="10">
+        </div>
+        <div class="field"><label for="dpi">PNG resolution</label>
+          <select id="dpi">
+            <option value="150">150 dpi · draft</option>
+            <option value="300" selected>300 dpi · print</option>
+            <option value="600">600 dpi · fine dots</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>Ink and paper</h2>
+        <div class="presets" id="presets" role="group" aria-label="Colour presets"></div>
+        <p class="presetname" id="presetName"></p>
+        <div class="colors">
+          <div class="field"><label for="inkc">Ink</label><input class="color" type="color" id="inkc" value="#15171A"></div>
+          <div class="field"><label for="paperc">Paper</label><input class="color" type="color" id="paperc" value="#FBFBF8"></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <details class="adv">
+          <summary>Advanced</summary>
+          <div class="field">
+            <div class="lab"><label for="passes">Relaxation passes</label><output id="passesOut"></output></div>
+            <input type="range" id="passes" min="0" max="60" step="1" value="10">
+            <p class="hint">Each pass spaces the dots more evenly. 0 is raw random scatter. Regularity levels off after about 10 passes, so more mostly costs time.</p>
+          </div>
+        </details>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script id="src-d3" type="text/plain">/*__D3__*/</script>
+<script id="src-engine" type="text/plain">/*__ENGINE__*/</script>
+<script>/*__D3__*/</script>
+<script>/*__ENGINE__*/</script>
+<script>/*__UI__*/</script>
